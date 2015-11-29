@@ -47,6 +47,7 @@ public:
 	enum type_t {
 		TYPE_ARRAY = 0x31337, // fake
 		TYPE_STRING = 0x16,
+		TYPE_STRING2 = 0x15,
 		TYPE_OFFSETS = 0x20,
 		TYPE_OBJECTS = 0x21,
 	};

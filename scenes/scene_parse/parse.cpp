@@ -77,7 +77,8 @@ parse_texts(string layer_name,
 	const psb_string_t* str) {
 	scene_text_pack packs;
 
-	if (layer_name == "scenes.texts" || layer_name == "scenes.selects.text" || layer_name == "scenes.selectInfo.select.text") {
+	if (layer_name == "scenes.texts" || layer_name == "scenes.title" ||layer_name == "scenes.selects.text" || layer_name == "scenes.selectInfo.select.text") {
+		
 		packs.index = str->get_index();
 		packs.texts = str->get_string();
 
@@ -98,7 +99,7 @@ traversal_offsets_tree(psb_t& psb,
 
 	for (unsigned long i = 0; i < offsets->size(); i++) {
 		unsigned char* entry_buff = offsets->get(i);
-
+		
 		psb.unpack(value, entry_buff);
 
 		if (value != NULL) {
@@ -124,7 +125,7 @@ traversal_object_tree(psb_t& psb,
 		string entry_name = objects->get_name(i);
 		string layer_name = format_layer(prev_layer, entry_name);
 		unsigned char* entry_buff = objects->get_data(i);
-
+		
 		psb.unpack(value, entry_buff);
 
 		if (value != NULL) {

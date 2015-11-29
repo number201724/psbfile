@@ -374,6 +374,7 @@ unpack(unsigned char*& p) const {
 		return new psb_objects_t(*this, p);
 
 	case psb_value_t::TYPE_STRING:
+	case psb_value_t::TYPE_STRING2:
 		return new psb_string_t(*this, p);
 
 	default:
