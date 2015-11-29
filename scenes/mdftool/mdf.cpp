@@ -25,7 +25,7 @@ parse_commands(int argc,
 	char *argv[])
 {
 	if (argc == 1) {
-		printf("scene_parse <filepath>\n");
+		printf("mdftool <filepath>\n");
 		exit(0);
 	}
 
