@@ -158,6 +158,7 @@
     <ClInclude Include="..\..\common\psb_stream.hpp" />
     <ClInclude Include="deelx.h" />
     <ClInclude Include="plugin.h" />
+    <ClInclude Include="resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\common\psb.cpp" />
@@ -169,6 +170,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="mel.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="rsrc.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
