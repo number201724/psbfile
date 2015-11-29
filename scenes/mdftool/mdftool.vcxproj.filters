@@ -15,10 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\common\psb.cpp">
+    <ClCompile Include="mdf.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="build.cpp">
+    <ClCompile Include="..\..\common\psb.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\common\psb_stream.cpp">
@@ -32,5 +32,14 @@
     <ClInclude Include="..\..\common\psb_stream.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="zconf.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="zlib.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="zdll.lib" />
   </ItemGroup>
 </Project>
