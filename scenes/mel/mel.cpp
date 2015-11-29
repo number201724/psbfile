@@ -321,6 +321,7 @@ MRESULT WINAPI ModifyLine(LPFILE_INFO lpFileInfo, DWORD nLine)
 	nNewLen = WideCharToMultiByte(CP_UTF8, 0, pWideStr, -1, pNewStr, nNewLen * 4, 0, 0);
 
 	lpPSBInfo->texts[nLine].texts = pNewStr;
+	delete[] pNewStr;
 
 	return E_SUCCESS;
 }
