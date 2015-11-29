@@ -71,6 +71,18 @@ format_layer(string prev_layer,
 	return layer_name;
 }
 
+bool
+full_integer(string& str) {
+	bool result = true;
+	for (unsigned long i = 0; i < str.length(); i++) {
+		if(str[i] >= '0' && str[i] <= '9')
+			continue;
+		result = false;
+		break;
+	}
+	return result;
+}
+
 void
 parse_texts(string layer_name,
 	string entry_name,
@@ -81,7 +93,11 @@ parse_texts(string layer_name,
 		
 		packs.index = str->get_index();
 		packs.texts = str->get_string();
-
+		
+		if (packs.texts.empty()) return;
+		if (packs.texts[0] == '%') return;
+		if (full_integer(packs.texts)) return;
+		
 		if (scene_texts_map.find(packs.index) == scene_texts_map.end()) {
 			scene_texts_map[packs.index] = packs.texts;
 			scene_texts.push_back(packs);
