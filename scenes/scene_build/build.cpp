@@ -101,8 +101,8 @@ void load_merge_files() {
 	char* text;
 	int text_len;
 	char line[4096];
-	char solid[] = "\xE2\x97\x8F\x00";		//°Ò => UTF-8
-	char hollow[] = "\xE2\x97\x8B\x00";		//° => UTF-8
+	char solid[] = "\xE2\x97\x8F\x00";		//‚óè => UTF-8
+	char hollow[] = "\xE2\x97\x8B\x00";		//‚óã => UTF-8
 
 	fp = fopen(merge_filename.c_str(), "rb");
 
@@ -116,7 +116,7 @@ void load_merge_files() {
 
 			sscanf(&line[3], "%08u", &index);
 
-			//ignore °Ò00000000°Ò partten
+			//ignore ‚óè00000000‚óè partten
 			text = &line[14];
 			text_len = strlen(text);
 

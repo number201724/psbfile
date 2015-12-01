@@ -78,11 +78,12 @@ format_layer(string prev_layer,
 	}
 	return layer_name;
 }
-bool full_integer(string& str) {
+bool filterChars(string& str) {
 	bool result = true;
 	for (unsigned long i = 0; i < str.length(); i++) {
-		if(str[i] >= '0' && str[i] <= '9')
+		if (str[i] >= ' ' && str[i] <= '~')
 			continue;
+
 		result = false;
 		break;
 	}
@@ -94,14 +95,12 @@ parse_texts(string layer_name,
 	string entry_name,
 	const psb_string_t* str) {
 	scene_text_pack packs;
-
 	if (layer_name == "scenes.texts" || layer_name == "scenes.title" || layer_name == "scenes.selects.text" || layer_name == "scenes.selectInfo.select.text") {
 
 		packs.index = str->get_index();
 		packs.texts = str->get_string();
 		if (packs.texts.empty()) return;
-		if (packs.texts[0] == '%') return;
-		if (full_integer(packs.texts)) return;
+		if (filterChars(packs.texts)) return;
 		
 
 		if (scene_texts_map.find(packs.index) == scene_texts_map.end()) {

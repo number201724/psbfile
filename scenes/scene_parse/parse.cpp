@@ -1,4 +1,4 @@
-﻿#include "../../common/psb.hpp"
+#include "../../common/psb.hpp"
 /*
 M2 PSB Editor
 Author:201724
@@ -72,11 +72,12 @@ format_layer(string prev_layer,
 }
 
 bool
-full_integer(string& str) {
+filter_chars(string& str) {
 	bool result = true;
 	for (unsigned long i = 0; i < str.length(); i++) {
-		if(str[i] >= '0' && str[i] <= '9')
+		if (str[i] >= ' ' && str[i] <= '~')
 			continue;
+
 		result = false;
 		break;
 	}
@@ -95,8 +96,7 @@ parse_texts(string layer_name,
 		packs.texts = str->get_string();
 		
 		if (packs.texts.empty()) return;
-		if (packs.texts[0] == '%') return;
-		if (full_integer(packs.texts)) return;
+		//if (filter_chars(packs.texts)) return;
 		
 		if (scene_texts_map.find(packs.index) == scene_texts_map.end()) {
 			scene_texts_map[packs.index] = packs.texts;

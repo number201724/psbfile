@@ -192,7 +192,7 @@ typedef struct _CMD_OPTIONS {
 typedef struct _PRE_DATA {
 	HANDLE				hGlobalHeap;
 	LPCWSTR				lpszConfigFileName;
-	LPVOID				lpConfigs;	//���ýṹ
+	LPVOID				lpConfigs;	//配置结构
 
 	LPVOID				lpMenuFuncs;
 	LPSIMPFUNC_TABLE	lpSimpFunc;
