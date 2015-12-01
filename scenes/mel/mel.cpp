@@ -59,7 +59,7 @@ struct scene_text_pack
 };
 
 vector<scene_text_pack> scene_texts;
-map<unsigned long, string> scene_texts_map;
+//map<unsigned long, string> scene_texts_map;
 
 void
 traversal_object_tree(psb_t& psb,
@@ -103,10 +103,10 @@ parse_texts(string layer_name,
 		if (filterChars(packs.texts)) return;
 		
 
-		if (scene_texts_map.find(packs.index) == scene_texts_map.end()) {
-			scene_texts_map[packs.index] = packs.texts;
+		//if (scene_texts_map.find(packs.index) == scene_texts_map.end()) {
+		//	scene_texts_map[packs.index] = packs.texts;
 			scene_texts.push_back(packs);
-		}
+		//}
 	}
 }
 
@@ -231,7 +231,7 @@ MRESULT WINAPI GetText(LPFILE_INFO lpFileInfo, LPDWORD lpdwRInfo)
 	bool bIsCompress = false;
 
 	scene_texts.clear();
-	scene_texts_map.clear();
+	//scene_texts_map.clear();
 
 	if (lpFileInfo->dwCharSet == CS_UNKNOWN)
 		lpFileInfo->dwCharSet = CS_UTF8;

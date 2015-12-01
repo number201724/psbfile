@@ -15,7 +15,7 @@ struct scene_text_pack
 };
 
 string script_filename;
-map<unsigned long, string> scene_texts_map;
+//map<unsigned long, string> scene_texts_map;
 vector<scene_text_pack> scene_texts;
 
 void
@@ -98,10 +98,10 @@ parse_texts(string layer_name,
 		if (packs.texts.empty()) return;
 		//if (filter_chars(packs.texts)) return;
 		
-		if (scene_texts_map.find(packs.index) == scene_texts_map.end()) {
-			scene_texts_map[packs.index] = packs.texts;
+		//if (scene_texts_map.find(packs.index) == scene_texts_map.end()) {
+		//	scene_texts_map[packs.index] = packs.texts;
 			scene_texts.push_back(packs);
-		}
+		//}
 	}
 }
 
