@@ -90,7 +90,9 @@ parse_texts(string layer_name,
 	const psb_string_t* str) {
 	scene_text_pack packs;
 
-	if (layer_name == "scenes.texts" || layer_name == "scenes.title" ||layer_name == "scenes.selects.text" || layer_name == "scenes.selectInfo.select.text") {
+	if (layer_name == "scenes.texts" || 
+		layer_name == "scenes.nexts.text" || 
+		layer_name == "scenes.title" ||layer_name == "scenes.selects.text" || layer_name == "scenes.selectInfo.select.text") {
 		
 		packs.index = str->get_index();
 		packs.texts = str->get_string();
