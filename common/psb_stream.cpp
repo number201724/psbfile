@@ -94,29 +94,52 @@ psb_array_build_t(vector<unsigned long> values) :
 		}
 	}
 
-	unsigned char n = int_size(values.size());
-	write_byte(n);
-	write_int(values.size(), n);
-	write_byte(entry_length);
+	align = entry_length;
+	arrays = values;
+}
 
-	for (unsigned int i = 0; i < values.size(); i++) {
-		write_int(values[i], entry_length);
+unsigned char*
+psb_array_build_t::
+get_buffer() {
+	resize(0);
+
+	unsigned char n = int_size(arrays.size());
+	write_byte(n);
+	write_int(arrays.size(), n);
+	write_byte(align);
+
+	for (unsigned int i = 0; i < arrays.size(); i++) {
+		write_int(arrays[i], align);
 	}
+
+	return buff;
+}
+void
+psb_array_build_t::
+set_align(unsigned char n) {
+	align = n;
+}
+
+unsigned long
+psb_array_build_t::
+get_length() {
+	return size;
 }
 
 unsigned char
 psb_array_build_t::
 int_size(unsigned long value) {
-	if (value <= 0xFF) {
-		return 1;
+	//bit mask
+	if (value & 0xff000000) {
+		return 4;
 	}
-	if (value <= 0xFFFF) {
-		return 2;
-	}
-	if (value <= 0xFFFFFF) {
+	if (value & 0xff0000) {
 		return 3;
 	}
-	return 4;
+	if (value & 0xff00) {
+		return 2;
+	}
+	return 1;
 }
 
 void

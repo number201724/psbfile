@@ -46,27 +46,54 @@ public:
 	// Probably this should actually be kind as in get_number below. Don't care.
 	enum type_t {
 		TYPE_ARRAY = 0x31337, // fake
-		TYPE_STRING = 0x16,
-		TYPE_STRING2 = 0x15,
-		TYPE_OFFSETS = 0x20,
+
+		//number
+		TYPE_N0 = 0x4,
+		TYPE_N1 = 0x5,
+		TYPE_N2 = 0x6,
+		TYPE_N3 = 0x7,
+		TYPE_N4 = 0x8,
+
+		TYPE_STRING = 0x15,
+		TYPE_STRING2 = 0x16,
+		TYPE_LIST = 0x20,
 		TYPE_OBJECTS = 0x21,
 	};
 
 	psb_value_t(const psb_t&    psb,
 		type_t          type,
 		unsigned char*& p);
+	psb_value_t(const psb_t&    psb,
+		unsigned char*& p);
+	
 
 	virtual ~psb_value_t(void);
 
 	type_t get_type(void) const;
+	virtual string get_type_string() = 0;
 
 protected:
 	const psb_t& psb;
-
-private:
 	type_t type;
 };
+/***************************************************************************
+* psb_number_t
+*/
+class psb_number_t : public psb_value_t {
+public:
+	psb_number_t(const psb_t&    psb,
+		unsigned char*& p);
 
+	unsigned long get_number() const;
+
+	static bool is_number(psb_value_t *value);
+
+	virtual string get_type_string() {
+		return "psb_number_t";
+	}
+private:
+	unsigned long number;
+};
 /***************************************************************************
 * psb_array_t
 */
@@ -83,6 +110,10 @@ public:
 	unsigned long  entry_count;
 	unsigned long  entry_length;
 	unsigned char* buff;
+
+	virtual string get_type_string() {
+		return "psb_array_t";
+	}
 };
 /***************************************************************************
 * psb_string_t
@@ -97,6 +128,10 @@ public:
 	string get_string() const;
 
 	unsigned char* buff;
+
+	virtual string get_type_string() {
+		return "psb_string_t";
+	}
 };
 /***************************************************************************
 * psb_objects_t
@@ -118,6 +153,10 @@ public:
 
 	template<class T> void unpack(T*& out, const string& name) const;
 
+	virtual string get_type_string() {
+		return "psb_objects_t";
+	}
+
 public:
 	psb_array_t*   names;
 	psb_array_t*   offsets;
@@ -125,14 +164,14 @@ public:
 };
 
 /***************************************************************************
-* psb_offsets_t
+* psb_list_t
 */
-class psb_offsets_t : public psb_value_t {
+class psb_list_t : public psb_value_t {
 public:
-	psb_offsets_t(const psb_t&    psb,
+	psb_list_t(const psb_t&    psb,
 		unsigned char*& p);
 
-	~psb_offsets_t(void);
+	~psb_list_t(void);
 
 	unsigned long size(void) const;
 
@@ -140,7 +179,11 @@ public:
 
 	template<class T> void unpack(T*& out, unsigned long index) const;
 
-private:
+	virtual string get_type_string() {
+		return "psb_list_t";
+	}
+
+public:
 	psb_array_t*   offsets;
 	unsigned char* buff;
 };
@@ -167,7 +210,7 @@ public:
 
 	unsigned long get_chunk_length(unsigned char* p) const;
 
-	string make_filename(const string& name) const;
+	//string make_filename(const string& name) const;
 
 	psb_value_t* unpack(unsigned char*& p) const;
 
@@ -188,7 +231,7 @@ public:
 	unsigned char* chunk_data;
 
 	psb_objects_t* objects;
-	psb_offsets_t* expire_suffix_list;
+	psb_list_t* expire_suffix_list;
 
 	string         extension;
 };
@@ -208,7 +251,7 @@ unpack(T*& out, const string& name) const {
 
 template<class T>
 void
-psb_offsets_t::
+psb_list_t::
 unpack(T*& out, unsigned long index) const {
 	unsigned char* temp = get(index);
 

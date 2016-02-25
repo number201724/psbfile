@@ -13,8 +13,8 @@ public:
 	virtual long replace(unsigned long pos, unsigned long src_len, unsigned long dst_len, const unsigned char* data);
 	void resize(unsigned long n);
 	unsigned long write(const unsigned char* data, unsigned long length);
-	unsigned char* get_buffer();
-	unsigned long get_length();
+	virtual unsigned char* get_buffer();
+	virtual unsigned long get_length();
 protected:
 	unsigned char* buff;
 	unsigned long size;
@@ -29,6 +29,14 @@ public:
 	void write_int(unsigned long value, unsigned char size = 0);
 
 	unsigned char entry_length;
+
+	virtual unsigned char* get_buffer();
+	virtual unsigned long get_length();
+	void set_align(unsigned char n);
+
+protected:
+	vector<unsigned long> arrays;
+	unsigned char align;
 };
 
 class psb_fixed_build_t : public psb_stream_t {

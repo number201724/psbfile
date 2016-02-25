@@ -24,6 +24,12 @@ psb_value_t(const psb_t&    psb,
 {}
 
 psb_value_t::
+psb_value_t(const psb_t&    psb,
+	unsigned char*& p)
+	: psb(psb)
+{}
+
+psb_value_t::
 ~psb_value_t(void) {
 }
 
@@ -31,6 +37,50 @@ psb_value_t::type_t
 psb_value_t::
 get_type(void) const {
 	return type;
+}
+
+/***************************************************************************
+* psb_number_t
+*/
+psb_number_t::
+psb_number_t(const psb_t&    psb,
+	unsigned char*& p) 
+	: psb_value_t(psb, p) 
+{
+	type = (psb_value_t::type_t)*p++;
+	number = 0;
+
+	if (type == psb_value_t::TYPE_N1) {
+		number = *p++;
+	}
+	if (type == psb_value_t::TYPE_N2) {
+		for (unsigned long i = 0; i < 2; i++) number |= *p++ << (i * 8);
+	}
+	if (type == psb_value_t::TYPE_N3) {
+		for (unsigned long i = 0; i < 3; i++) number |= *p++ << (i * 8);
+	}
+	if (type == psb_value_t::TYPE_N4) {
+		for (unsigned long i = 0; i < 4; i++) number |= *p++ << (i * 8);
+	}
+}
+
+unsigned long
+psb_number_t::
+get_number() const
+{
+	return number;
+}
+
+bool
+psb_number_t::
+is_number(psb_value_t *value)
+{
+	if (value->get_type() == psb_value_t::TYPE_N0 || value->get_type() == psb_value_t::TYPE_N1 ||
+		value->get_type() == psb_value_t::TYPE_N2 || value->get_type() == psb_value_t::TYPE_N3 ||
+		value->get_type() == psb_value_t::TYPE_N4) {
+		return true;
+	}
+	return false;
 }
 
 /***************************************************************************
@@ -159,28 +209,28 @@ get_data(const string& name) const {
 /***************************************************************************
 * psb_offsets_t
 */
-psb_offsets_t::
-psb_offsets_t(const psb_t&    psb,
+psb_list_t::
+psb_list_t(const psb_t&    psb,
 	unsigned char*& p)
-	: psb_value_t(psb, TYPE_OFFSETS, p)
+	: psb_value_t(psb, TYPE_LIST, p)
 {
 	offsets = new psb_array_t(psb, p);
 	buff = p;
 }
 
-psb_offsets_t::
-~psb_offsets_t(void) {
+psb_list_t::
+~psb_list_t(void) {
 	delete offsets;
 }
 
 unsigned long
-psb_offsets_t::
+psb_list_t::
 size(void) const {
 	return offsets->size();
 }
 
 unsigned char*
-psb_offsets_t::
+psb_list_t::
 get(unsigned long index) const {
 	return buff + offsets->get(index);
 }
@@ -364,11 +414,18 @@ unpack(unsigned char*& p) const {
 	unsigned char type = *p++;
 
 	switch (type) {
+	case psb_value_t::TYPE_N0:
+	case psb_value_t::TYPE_N1:
+	case psb_value_t::TYPE_N2:
+	case psb_value_t::TYPE_N3:
+	case psb_value_t::TYPE_N4:
+		return new psb_number_t(*this, --p);
+
 	case psb_value_t::TYPE_ARRAY:
 		return new psb_array_t(*this, p);
 
-	case psb_value_t::TYPE_OFFSETS:
-		return new psb_offsets_t(*this, p);
+	case psb_value_t::TYPE_LIST:
+		return new psb_list_t(*this, p);
 
 	case psb_value_t::TYPE_OBJECTS:
 		return new psb_objects_t(*this, p);

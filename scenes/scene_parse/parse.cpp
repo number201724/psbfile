@@ -1,4 +1,6 @@
 #include "../../common/psb.hpp"
+#include <iostream>
+
 /*
 M2 PSB Editor
 Author:201724
@@ -94,10 +96,12 @@ parse_texts(string layer_name,
 		layer_name == "scenes.nexts.text" || 
 		layer_name == "scenes.title" ||layer_name == "scenes.selects.text" || layer_name == "scenes.selectInfo.select.text") {
 		
+
 		packs.index = str->get_index();
 		packs.texts = str->get_string();
 		
 		if (packs.texts.empty()) return;
+		
 		//if (filter_chars(packs.texts)) return;
 		
 		//if (scene_texts_map.find(packs.index) == scene_texts_map.end()) {
@@ -110,25 +114,32 @@ parse_texts(string layer_name,
 //It is actually a connecting structure, object and data node separately
 void
 traversal_offsets_tree(psb_t& psb,
-	const psb_offsets_t *offsets,
+	const psb_list_t *offsets,
 	string layer_name,
 	string entry_name) {
 	psb_value_t *value = NULL;
 
-	for (unsigned long i = 0; i < offsets->size(); i++) {
+	for (unsigned long i = 0; i < offsets->size(); i++) {		
 		unsigned char* entry_buff = offsets->get(i);
-		
 		psb.unpack(value, entry_buff);
 
 		if (value != NULL) {
-			if (value->get_type() == psb_value_t::TYPE_OFFSETS) {
-				traversal_offsets_tree(psb, (const psb_offsets_t *)value, layer_name, entry_name);
+			if (value->get_type() == psb_value_t::TYPE_LIST) {
+				traversal_offsets_tree(psb, (const psb_list_t *)value, layer_name, entry_name);
 			}
 			if (value->get_type() == psb_value_t::TYPE_OBJECTS) {
+				
 				traversal_object_tree(psb, (const psb_objects_t *)value, layer_name);
+
 			}
 			if (value->get_type() == psb_value_t::TYPE_STRING) {
 				parse_texts(layer_name, entry_name, (const psb_string_t *)value);
+			}
+
+			if (value->get_type() == psb_value_t::TYPE_N0 || value->get_type() == psb_value_t::TYPE_N1 ||
+				value->get_type() == psb_value_t::TYPE_N2 || value->get_type() == psb_value_t::TYPE_N3 ||
+				value->get_type() == psb_value_t::TYPE_N4) {
+				
 			}
 		}
 	}
@@ -143,18 +154,25 @@ traversal_object_tree(psb_t& psb,
 		string entry_name = objects->get_name(i);
 		string layer_name = format_layer(prev_layer, entry_name);
 		unsigned char* entry_buff = objects->get_data(i);
-		
+
 		psb.unpack(value, entry_buff);
 
 		if (value != NULL) {
-			if (value->get_type() == psb_value_t::TYPE_OFFSETS) {
-				traversal_offsets_tree(psb, (const psb_offsets_t *)value, layer_name, entry_name);
+			if (value->get_type() == psb_value_t::TYPE_LIST) {
+				traversal_offsets_tree(psb, (const psb_list_t *)value, layer_name, entry_name);
 			}
 			if (value->get_type() == psb_value_t::TYPE_OBJECTS) {
+				//char s[32];
+				//sprintf(s, "%d", i);
 				traversal_object_tree(psb, (const psb_objects_t *)value, layer_name);
 			}
 			if (value->get_type() == psb_value_t::TYPE_STRING) {
 				parse_texts(layer_name, entry_name, (const psb_string_t *)value);
+			}
+			if (value->get_type() == psb_value_t::TYPE_N0 || value->get_type() == psb_value_t::TYPE_N1 ||
+				value->get_type() == psb_value_t::TYPE_N2 || value->get_type() == psb_value_t::TYPE_N3 ||
+				value->get_type() == psb_value_t::TYPE_N4) {
+				
 			}
 		}
 	}
@@ -203,6 +221,7 @@ int main(int argc,
 
 	psb_t psb(buff);
 	const psb_objects_t* psb_objects = psb.get_objects();
+	printf("text_total_count:%d\n", psb.strings->entry_count);
 
 	printf("parse script scenes and selects\n");
 	traversal_object_tree(psb, psb_objects);
