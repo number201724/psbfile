@@ -118,7 +118,7 @@ parse_texts(string layer_name,
 //It is actually a connecting structure, object and data node separately
 void
 traversal_offsets_tree(psb_t& psb,
-	const psb_list_t *offsets,
+	const psb_collection_t *offsets,
 	string layer_name,
 	string entry_name) {
 	psb_value_t *value = NULL;
@@ -129,7 +129,7 @@ traversal_offsets_tree(psb_t& psb,
 
 		if (value != NULL) {
 			if (value->get_type() == psb_value_t::TYPE_LIST) {
-				traversal_offsets_tree(psb, (const psb_list_t *)value, layer_name, entry_name);
+				traversal_offsets_tree(psb, (const psb_collection_t *)value, layer_name, entry_name);
 			}
 			if (value->get_type() == psb_value_t::TYPE_OBJECTS) {
 				
@@ -166,7 +166,7 @@ traversal_object_tree(psb_t& psb,
 
 		if (value != NULL) {
 			if (value->get_type() == psb_value_t::TYPE_LIST) {
-				traversal_offsets_tree(psb, (const psb_list_t *)value, layer_name, entry_name);
+				traversal_offsets_tree(psb, (const psb_collection_t *)value, layer_name, entry_name);
 			}
 			if (value->get_type() == psb_value_t::TYPE_OBJECTS) {
 				

@@ -15,10 +15,9 @@ original by asmodean['expimg']
 #include <vector>
 #include <stdint.h>
 
-
-#pragma  pack(1)
-
 using namespace std;
+
+#pragma pack(1)
 
 struct PSBHDR {
 	unsigned char signature[4];
@@ -32,6 +31,8 @@ struct PSBHDR {
 	uint32_t offset_chunk_data;
 	uint32_t offset_entries;
 };
+
+#pragma pack()
 
 
 /***************************************************************************
@@ -48,18 +49,39 @@ public:
 	// Probably this should actually be kind as in get_number below. Don't care.
 	enum type_t {
 		TYPE_ARRAY = 0xFF, // fake
-		TYPE_VOID = 0x1,
+		TYPE_NULL = 0x1, // 0
+		//TYPE_TRUE = 0x2, //1
+
+		//TYPE_TRUE2 = 0x3,  unknown
+
 		//number
 		TYPE_N0 = 0x4,
 		TYPE_N1 = 0x5,
 		TYPE_N2 = 0x6,
 		TYPE_N3 = 0x7,
 		TYPE_N4 = 0x8,
-
+		//uint64
+		TYPE_N5 = 0x9,
+		TYPE_N6 = 0xA,
+		TYPE_N7 = 0xB,
+		TYPE_N8 = 0xC,
+		////int32
+		//TYPE_N9 = 0xD,
+		//TYPE_N10 = 0xE,
+		//TYPE_N11 = 0xF,
+		//TYPE_N12 = 0x10,
+		
 		TYPE_STRING = 0x15,
 		TYPE_STRING2 = 0x16,
-		TYPE_LIST = 0x20,
-		TYPE_OBJECTS = 0x21,
+
+		//resource of thunk
+		TYPE_RESOURCE = 0x19,
+
+		TYPE_FLOAT0 = 0x1D,
+		TYPE_FLOAT = 0x1E,
+		TYPE_DOUBLE = 0x1F,
+		TYPE_COLLECTION = 0x20,	//object collection
+		TYPE_OBJECTS = 0x21,	//object
 	};
 
 	psb_value_t(const psb_t&    psb,
@@ -72,44 +94,83 @@ public:
 	virtual ~psb_value_t(void);
 
 	type_t get_type(void) const;
-	virtual string get_type_string() = 0;
+	virtual string get_type_string() {
+		return "psb_value_t";
+	}
 
 protected:
 	const psb_t& psb;
 	type_t type;
 };
 /***************************************************************************
-* psb_void_t
+* psb_null_t
 */
-class psb_void_t : public psb_value_t {
+class psb_null_t : public psb_value_t {
 public:
-	psb_void_t(const psb_t&    psb,
-		unsigned char*& p);
+	psb_null_t(const psb_t&    psb,
+		unsigned char*& p,
+		psb_value_t::type_t type);
 
 	virtual string get_type_string() {
-		return "psb_void_t";
+		return "psb_null_t";
 	}
+
 private:
 	unsigned char *buff;
 };
 
 /***************************************************************************
+* psb_resource_t
+*/
+class psb_resource_t : public psb_value_t {
+public:
+	psb_resource_t(const psb_t&    psb,
+		unsigned char*& p,
+		psb_value_t::type_t type);
+
+	unsigned char *get_buff();
+	uint32_t get_length();
+
+protected:
+	unsigned char *chunk_buff;
+	uint32_t chunk_len;
+};
+/***************************************************************************
 * psb_number_t
 */
 class psb_number_t : public psb_value_t {
 public:
+	union psb_number_value_t {
+		uint32_t i;
+		float f;
+		double d;
+		unsigned __int64 i64;
+	};
+
+	enum psb_number_type_t {
+		INTEGER,
+		LONGLONG,
+		FLOAT,
+		DOUBLE
+	};
+
 	psb_number_t(const psb_t&    psb,
-		unsigned char*& p);
+		unsigned char*& p, psb_value_t::type_t type);
 
-	uint32_t get_number() const;
+	uint32_t get_integer() const;
+	float get_float() const;
+	double get_double() const;
+	unsigned __int64 get_integer64() const;
+	psb_number_type_t get_number_type() const;
 
-	static bool is_number(psb_value_t *value);
+	static bool is_number_type(psb_value_t *value);
 
 	virtual string get_type_string() {
 		return "psb_number_t";
 	}
 private:
-	uint32_t number;
+	psb_number_value_t value;
+	psb_number_type_t number_type;
 	unsigned char *buff;
 };
 /***************************************************************************
@@ -217,7 +278,7 @@ public:
 
 	string get_name(uint32_t index) const;
 
-	uint32_t get_number(unsigned char* p) const;
+	bool get_number(unsigned char* p, psb_number_t::psb_number_value_t &value,psb_number_t::psb_number_type_t &number_type) const;
 
 	string get_string(unsigned char* p) const;
 	uint32_t get_string_index(unsigned char* p) const;

@@ -39,49 +39,85 @@ get_type(void) const {
 	return type;
 }
 
-psb_void_t::
-psb_void_t(const psb_t&    psb,
-	unsigned char*& p) 
-	: psb_value_t(psb, psb_value_t::TYPE_VOID, p){
-
+/***************************************************************************
+* psb_null_t
+*/
+psb_null_t::
+psb_null_t(const psb_t&    psb,
+	unsigned char*& p, psb_value_t::type_t type)
+	: psb_value_t(psb, type, p)
+{
 	buff = p;
-
+}
+/***************************************************************************
+* psb_resource_t
+*/
+psb_resource_t::
+psb_resource_t(const psb_t&    psb,
+	unsigned char*& p,
+	psb_value_t::type_t type) :
+	psb_value_t(psb, type, p)
+{
+	chunk_buff = psb.get_chunk(p);
+	chunk_len = psb.get_chunk_length(p);
+}
+unsigned char *
+psb_resource_t::
+get_buff()
+{
+	return chunk_buff;
+}
+uint32_t
+psb_resource_t::
+get_length()
+{
+	return chunk_len;
 }
 /***************************************************************************
 * psb_number_t
 */
 psb_number_t::
 psb_number_t(const psb_t&    psb,
-	unsigned char*& p) 
-	: psb_value_t(psb, p) 
+	unsigned char*& p,
+	psb_value_t::type_t type)
+	: psb_value_t(psb, type, p)
 {
-	type = (psb_value_t::type_t)*p++;
-	number = 0;
-
-	if (type == psb_value_t::TYPE_N1) {
-		number = *p++;
-	}
-	if (type == psb_value_t::TYPE_N2) {
-		for (uint32_t i = 0; i < 2; i++) number |= *p++ << (i * 8);
-	}
-	if (type == psb_value_t::TYPE_N3) {
-		for (uint32_t i = 0; i < 3; i++) number |= *p++ << (i * 8);
-	}
-	if (type == psb_value_t::TYPE_N4) {
-		for (uint32_t i = 0; i < 4; i++) number |= *p++ << (i * 8);
-	}
+	buff = p;
+	psb.get_number(p, value, number_type);
 }
 
 uint32_t
 psb_number_t::
-get_number() const
+get_integer() const
 {
-	return number;
+	return value.i;
+}
+
+unsigned __int64
+psb_number_t::
+get_integer64() const
+{
+	return value.i64;
+}
+
+
+float
+psb_number_t::
+get_float() const
+{
+	return value.f;
+}
+
+double
+psb_number_t::
+get_double() const
+{
+	return value.d;
 }
 
 bool
 psb_number_t::
-is_number(psb_value_t *value)
+is_number_type(psb_value_t *value)
 {
 	if (value->get_type() == psb_value_t::TYPE_N0 || value->get_type() == psb_value_t::TYPE_N1 ||
 		value->get_type() == psb_value_t::TYPE_N2 || value->get_type() == psb_value_t::TYPE_N3 ||
@@ -221,7 +257,7 @@ get_data(const string& name) const {
 psb_collection_t::
 psb_collection_t(const psb_t&    psb,
 	unsigned char*& p)
-	: psb_value_t(psb, TYPE_LIST, p)
+	: psb_value_t(psb, TYPE_COLLECTION, p)
 {
 	offsets = new psb_array_t(psb, p);
 	buff = p;
@@ -323,13 +359,14 @@ get_name(uint32_t index) const {
 	return accum;
 }
 
-uint32_t
+bool
 psb_t::
-get_number(unsigned char* p) const {
+get_number(unsigned char* p, psb_number_t::psb_number_value_t &value, psb_number_t::psb_number_type_t &number_type) const {
 	static const uint32_t TYPE_TO_KIND[] = {
-		0, 1, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 8, 9, 9, 0xA, 0xB, 0xC
+		0, 1, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 8, 9, 9, 10, 11, 12
 	};
 
+	bool parse_ok = true;
 	unsigned char  type = *p++;
 	uint32_t  kind = TYPE_TO_KIND[type];
 	uint32_t  v = 0;
@@ -350,28 +387,46 @@ get_number(unsigned char* p) const {
 		for (uint32_t i = 0; i < n; i++) {
 			v |= *p++ << (i * 8);
 		}
+		value.i = v;
+		number_type = psb_number_t::psb_number_type_t::INTEGER;
 	}
 	break;
+	case 4:
+	{
+		uint32_t n = type - 4;
 
+		for (uint32_t i = 0; i < n; i++) {
+			v |= *p++ << (i * 8);
+		}
+		value.i64 = v;
+		number_type = psb_number_t::psb_number_type_t::LONGLONG;
+	}
+	break;
 	case 9:
 		if (type == 0x1E) {
-			v = (uint32_t)*(float*)p;
+			value.f = *(float*)p;
+			number_type = psb_number_t::psb_number_type_t::FLOAT;
+		}
+		if (type == 0x1D) {
+			value.f = 0;
+			number_type = psb_number_t::psb_number_type_t::FLOAT;
 		}
 		break;
 
 	case 10:
 		if (type == 0x1F) {
-			v = (uint32_t)*(double*)p;
+			value.d = *(double*)p;
+			number_type = psb_number_t::psb_number_type_t::DOUBLE;
 			p += 8;
 		}
 		break;
 
 	default:
-		printf("warning: unsupported packed number type (%d)\n", kind);
+		parse_ok = false;
 		break;
 	}
 
-	return v;
+	return parse_ok;
 }
 
 string
@@ -424,23 +479,34 @@ unpack(unsigned char*& p) const {
 	unsigned char type = *p++;
 
 	switch (type) {
-	case psb_value_t::TYPE_VOID:
-		return new psb_void_t(*this,p);
+	case psb_value_t::TYPE_NULL:
+		return new psb_null_t(*this, p, (psb_value_t::type_t)type);
+
 	case psb_value_t::TYPE_N0:
 	case psb_value_t::TYPE_N1:
 	case psb_value_t::TYPE_N2:
 	case psb_value_t::TYPE_N3:
 	case psb_value_t::TYPE_N4:
-		return new psb_number_t(*this, --p);
+	case psb_value_t::TYPE_N5:
+	case psb_value_t::TYPE_N6:
+	case psb_value_t::TYPE_N7:
+	case psb_value_t::TYPE_N8:
+	case psb_value_t::TYPE_FLOAT:
+	case psb_value_t::TYPE_FLOAT0:
+	case psb_value_t::TYPE_DOUBLE:
+		return new psb_number_t(*this, --p, (psb_value_t::type_t)type);
 
 	case psb_value_t::TYPE_ARRAY:
 		return new psb_array_t(*this, p);
 
-	case psb_value_t::TYPE_LIST:
+	case psb_value_t::TYPE_COLLECTION:
 		return new psb_collection_t(*this, p);
 
 	case psb_value_t::TYPE_OBJECTS:
 		return new psb_objects_t(*this, p);
+
+	case psb_value_t::TYPE_RESOURCE:
+		return new psb_resource_t(*this, --p, psb_value_t::TYPE_RESOURCE);
 
 	case psb_value_t::TYPE_STRING:
 	case psb_value_t::TYPE_STRING2:
