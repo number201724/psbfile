@@ -39,6 +39,14 @@ get_type(void) const {
 	return type;
 }
 
+psb_void_t::
+psb_void_t(const psb_t&    psb,
+	unsigned char*& p) 
+	: psb_value_t(psb, psb_value_t::TYPE_VOID, p){
+
+	buff = p;
+
+}
 /***************************************************************************
 * psb_number_t
 */
@@ -54,17 +62,17 @@ psb_number_t(const psb_t&    psb,
 		number = *p++;
 	}
 	if (type == psb_value_t::TYPE_N2) {
-		for (unsigned long i = 0; i < 2; i++) number |= *p++ << (i * 8);
+		for (uint32_t i = 0; i < 2; i++) number |= *p++ << (i * 8);
 	}
 	if (type == psb_value_t::TYPE_N3) {
-		for (unsigned long i = 0; i < 3; i++) number |= *p++ << (i * 8);
+		for (uint32_t i = 0; i < 3; i++) number |= *p++ << (i * 8);
 	}
 	if (type == psb_value_t::TYPE_N4) {
-		for (unsigned long i = 0; i < 4; i++) number |= *p++ << (i * 8);
+		for (uint32_t i = 0; i < 4; i++) number |= *p++ << (i * 8);
 	}
 }
 
-unsigned long
+uint32_t
 psb_number_t::
 get_number() const
 {
@@ -92,12 +100,13 @@ psb_array_t(const psb_t&    psb,
 	: psb_value_t(psb, TYPE_ARRAY, p),
 	data_length(0)
 {
-
-	unsigned long n = *p++ - 0xC;
+	uint32_t n = *p++ - 0xC;
+	
 	data_length += sizeof(unsigned char);
-	unsigned long v = 0;
+	uint32_t v = 0;
+	
 
-	for (unsigned long i = 0; i < n; i++) {
+	for (uint32_t i = 0; i < n; i++) {
 		v |= *p++ << (i * 8);
 		data_length += sizeof(unsigned char);
 	}
@@ -111,20 +120,20 @@ psb_array_t(const psb_t&    psb,
 	p += entry_count * entry_length;
 }
 
-unsigned long
+uint32_t
 psb_array_t::
 size(void) const {
 	return entry_count;
 }
 
-unsigned long
+uint32_t
 psb_array_t::
-get(unsigned long index) const {
-	unsigned long v = 0;
+get(uint32_t index) const {
+	uint32_t v = 0;
 
 	unsigned char* p = buff + index * entry_length;
 
-	for (unsigned long i = 0; i < entry_length; i++) {
+	for (uint32_t i = 0; i < entry_length; i++) {
 		v |= *p++ << (i * 8);
 	}
 
@@ -143,7 +152,7 @@ psb_string_t(const psb_t&    psb,
 
 }
 
-unsigned long
+uint32_t
 psb_string_t::
 get_index() const {
 	return psb.get_string_index(buff);
@@ -174,7 +183,7 @@ psb_objects_t::
 	delete names;
 }
 
-unsigned long
+uint32_t
 psb_objects_t::
 size(void) const {
 	return names->size();
@@ -182,20 +191,20 @@ size(void) const {
 
 string
 psb_objects_t::
-get_name(unsigned long index) const {
+get_name(uint32_t index) const {
 	return psb.get_name(names->get(index));
 }
 
 unsigned char*
 psb_objects_t::
-get_data(unsigned long index) const {
+get_data(uint32_t index) const {
 	return buff + offsets->get(index);
 }
 
 unsigned char*
 psb_objects_t::
 get_data(const string& name) const {
-	for (unsigned long i = 0; i < names->size(); i++) {
+	for (uint32_t i = 0; i < names->size(); i++) {
 		if (get_name(i) == name) {
 			return get_data(i);
 		}
@@ -207,10 +216,10 @@ get_data(const string& name) const {
 
 
 /***************************************************************************
-* psb_offsets_t
+* psb_collection_t
 */
-psb_list_t::
-psb_list_t(const psb_t&    psb,
+psb_collection_t::
+psb_collection_t(const psb_t&    psb,
 	unsigned char*& p)
 	: psb_value_t(psb, TYPE_LIST, p)
 {
@@ -218,20 +227,20 @@ psb_list_t(const psb_t&    psb,
 	buff = p;
 }
 
-psb_list_t::
-~psb_list_t(void) {
+psb_collection_t::
+~psb_collection_t(void) {
 	delete offsets;
 }
 
-unsigned long
-psb_list_t::
+uint32_t
+psb_collection_t::
 size(void) const {
 	return offsets->size();
 }
 
 unsigned char*
-psb_list_t::
-get(unsigned long index) const {
+psb_collection_t::
+get(uint32_t index) const {
 	return buff + offsets->get(index);
 }
 
@@ -242,12 +251,13 @@ psb_t::
 psb_t(unsigned char* buff) {
 	this->buff = buff;
 	hdr = (PSBHDR*)buff;
+	
+	unsigned char* p = this->buff + hdr->offset_names;
 
-	unsigned char* p = buff + hdr->offset_names;
 	str1 = new psb_array_t(*this, p);
 	str2 = new psb_array_t(*this, p);
 	str3 = new psb_array_t(*this, p);
-
+	
 	p = buff + hdr->offset_strings;
 	strings = new psb_array_t(*this, p);
 
@@ -290,16 +300,16 @@ psb_t::
 
 string
 psb_t::
-get_name(unsigned long index) const {
+get_name(uint32_t index) const {
 	string accum;
 
-	unsigned long a = str3->get(index);
-	unsigned long b = str2->get(a);
+	uint32_t a = str3->get(index);
+	uint32_t b = str2->get(a);
 
 	while (true) {
-		unsigned long c = str2->get(b);
-		unsigned long d = str1->get(c);
-		unsigned long e = b - d;
+		uint32_t c = str2->get(b);
+		uint32_t d = str1->get(c);
+		uint32_t e = b - d;
 
 		b = c;
 
@@ -313,16 +323,16 @@ get_name(unsigned long index) const {
 	return accum;
 }
 
-unsigned long
+uint32_t
 psb_t::
 get_number(unsigned char* p) const {
-	static const unsigned long TYPE_TO_KIND[] = {
+	static const uint32_t TYPE_TO_KIND[] = {
 		0, 1, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 7, 7, 7, 7, 8, 8, 8, 8, 9, 9, 0xA, 0xB, 0xC
 	};
 
 	unsigned char  type = *p++;
-	unsigned long  kind = TYPE_TO_KIND[type];
-	unsigned long  v = 0;
+	uint32_t  kind = TYPE_TO_KIND[type];
+	uint32_t  v = 0;
 
 	switch (kind) {
 	case 1:
@@ -335,9 +345,9 @@ get_number(unsigned char* p) const {
 
 	case 3:
 	{
-		unsigned long n = type - 4;
+		uint32_t n = type - 4;
 
-		for (unsigned long i = 0; i < n; i++) {
+		for (uint32_t i = 0; i < n; i++) {
 			v |= *p++ << (i * 8);
 		}
 	}
@@ -345,13 +355,13 @@ get_number(unsigned char* p) const {
 
 	case 9:
 		if (type == 0x1E) {
-			v = (unsigned long)*(float*)p;
+			v = (uint32_t)*(float*)p;
 		}
 		break;
 
 	case 10:
 		if (type == 0x1F) {
-			v = (unsigned long)*(double*)p;
+			v = (uint32_t)*(double*)p;
 			p += 8;
 		}
 		break;
@@ -367,23 +377,23 @@ get_number(unsigned char* p) const {
 string
 psb_t::
 get_string(unsigned char* p) const {
-	unsigned long n = *p++ - 0x14;
-	unsigned long v = 0;
+	uint32_t n = *p++ - 0x14;
+	uint32_t v = 0;
 
-	for (unsigned long i = 0; i < n; i++) {
+	for (uint32_t i = 0; i < n; i++) {
 		v |= *p++ << (i * 8);
 	}
 
 	return strings_data + strings->get(v);
 }
 
-unsigned long
+uint32_t
 psb_t::
 get_string_index(unsigned char* p) const {
-	unsigned long n = *p++ - 0x14;
-	unsigned long v = 0;
+	uint32_t n = *p++ - 0x14;
+	uint32_t v = 0;
 
-	for (unsigned long i = 0; i < n; i++) {
+	for (uint32_t i = 0; i < n; i++) {
 		v |= *p++ << (i * 8);
 	}
 
@@ -402,7 +412,7 @@ get_chunk(unsigned char* p) const {
 	return chunk_data + chunk_offsets->get(get_chunk_index(p));
 }
 
-unsigned long
+uint32_t
 psb_t::
 get_chunk_length(unsigned char* p) const {
 	return chunk_lengths->get(get_chunk_index(p));
@@ -414,6 +424,8 @@ unpack(unsigned char*& p) const {
 	unsigned char type = *p++;
 
 	switch (type) {
+	case psb_value_t::TYPE_VOID:
+		return new psb_void_t(*this,p);
 	case psb_value_t::TYPE_N0:
 	case psb_value_t::TYPE_N1:
 	case psb_value_t::TYPE_N2:
@@ -425,7 +437,7 @@ unpack(unsigned char*& p) const {
 		return new psb_array_t(*this, p);
 
 	case psb_value_t::TYPE_LIST:
-		return new psb_list_t(*this, p);
+		return new psb_collection_t(*this, p);
 
 	case psb_value_t::TYPE_OBJECTS:
 		return new psb_objects_t(*this, p);
@@ -442,13 +454,13 @@ unpack(unsigned char*& p) const {
 	return NULL;
 }
 
-unsigned long
+uint32_t
 psb_t::
 get_chunk_index(unsigned char* p) const {
-	unsigned long n = *p++ - 0x18;
-	unsigned long v = 0;
+	uint32_t n = *p++ - 0x18;
+	uint32_t v = 0;
 
-	for (unsigned long i = 0; i < n; i++) {
+	for (uint32_t i = 0; i < n; i++) {
 		v |= *p++ << (i * 8);
 	}
 

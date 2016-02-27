@@ -8,7 +8,7 @@ psb_stream_t() {
 }
 
 psb_stream_t::
-psb_stream_t(const unsigned char* in_buff, unsigned long in_size) {
+psb_stream_t(const unsigned char* in_buff, uint32_t in_size) {
 	size = in_size;
 	buff = (unsigned char *)malloc(in_size);
 	memcpy(buff, in_buff, in_size);
@@ -18,10 +18,10 @@ psb_stream_t::
 	free(buff);
 }
 
-unsigned long
+uint32_t
 psb_stream_t::
-write(const unsigned char* data, unsigned long length) {
-	unsigned long pos = size;
+write(const unsigned char* data, uint32_t length) {
+	uint32_t pos = size;
 	buff = (unsigned char*)realloc(buff, length + size);
 	memcpy(&buff[size], data, length);
 	size += length;
@@ -30,12 +30,12 @@ write(const unsigned char* data, unsigned long length) {
 
 long
 psb_stream_t::
-replace(unsigned long pos, unsigned long src_len, unsigned long dst_len, const unsigned char* data) {
+replace(uint32_t pos, uint32_t src_len, uint32_t dst_len, const unsigned char* data) {
 	if (dst_len == src_len) {
 		memcpy(&buff[pos], data, dst_len);
 	}
 	else if (src_len < dst_len) {
-		unsigned long diff = dst_len - src_len;
+		uint32_t diff = dst_len - src_len;
 		insert(data, diff, pos);
 		memcpy(&buff[pos], data, dst_len);
 		return diff;
@@ -56,13 +56,13 @@ replace(unsigned long pos, unsigned long src_len, unsigned long dst_len, const u
 }
 void
 psb_stream_t::
-resize(unsigned long n) {
+resize(uint32_t n) {
 	buff = (unsigned char*)realloc(buff, n);
 	size = n;
 }
 void
 psb_stream_t::
-insert(const unsigned char* data, unsigned long length, unsigned long pos) {
+insert(const unsigned char* data, uint32_t length, uint32_t pos) {
 	buff = (unsigned char*)realloc(buff, length + size);
 	memmove(&buff[pos + length], &buff[pos], size - pos);
 	memcpy(&buff[pos], data, length);
@@ -76,14 +76,14 @@ get_buffer() {
 	return buff;
 }
 
-unsigned long
+uint32_t
 psb_stream_t::
 get_length() {
 	return size;
 }
 
 psb_array_build_t::
-psb_array_build_t(vector<unsigned long> values) :
+psb_array_build_t(vector<uint32_t> values) :
 	psb_stream_t()
 {
 	entry_length = 0;
@@ -120,7 +120,7 @@ set_align(unsigned char n) {
 	align = n;
 }
 
-unsigned long
+uint32_t
 psb_array_build_t::
 get_length() {
 	return size;
@@ -128,7 +128,7 @@ get_length() {
 
 unsigned char
 psb_array_build_t::
-int_size(unsigned long value) {
+int_size(uint32_t value) {
 	//bit mask
 	if (value & 0xff000000) {
 		return 4;
@@ -152,7 +152,7 @@ write_byte(unsigned char value) {
 
 void
 psb_array_build_t::
-write_int(unsigned long value, unsigned char n) {
+write_int(uint32_t value, unsigned char n) {
 	unsigned char* p = (unsigned char *)&value;
 
 	if (n == 0) {
@@ -162,7 +162,7 @@ write_int(unsigned long value, unsigned char n) {
 	write(p, n);
 }
 psb_fixed_build_t::
-psb_fixed_build_t(const unsigned char* in_buff, unsigned long in_size) :
+psb_fixed_build_t(const unsigned char* in_buff, uint32_t in_size) :
 	psb_stream_t(in_buff, in_size) {
 	update_hdr();
 }
@@ -180,7 +180,7 @@ update_hdr() {
 
 void
 psb_fixed_build_t::
-correct_hdr(unsigned long pos, long diff) {
+correct_hdr(uint32_t pos, long diff) {
 	update_hdr();
 
 	if (hdr->unknown1 >= pos)
@@ -202,13 +202,13 @@ correct_hdr(unsigned long pos, long diff) {
 }
 void
 psb_fixed_build_t::
-insert(const unsigned char* data, unsigned long length, unsigned long pos) {
+insert(const unsigned char* data, uint32_t length, uint32_t pos) {
 	psb_stream_t::insert(data, length, pos);
 	correct_hdr(pos, length);
 }
 long
 psb_fixed_build_t::
-replace(unsigned long pos, unsigned long src_len, unsigned long dst_len, const unsigned char* data) {
+replace(uint32_t pos, uint32_t src_len, uint32_t dst_len, const unsigned char* data) {
 	long diff = psb_stream_t::replace(pos, src_len, dst_len, data);
 
 	correct_hdr(pos, diff);

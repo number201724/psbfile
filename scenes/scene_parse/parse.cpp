@@ -1,5 +1,6 @@
 #include "../../common/psb.hpp"
 #include <iostream>
+using namespace std;
 
 /*
 M2 PSB Editor
@@ -12,12 +13,12 @@ original by asmodean['expimg']
 
 struct scene_text_pack
 {
-	unsigned long index;
+	uint32_t index;
 	string texts;
 };
 
 string script_filename;
-//map<unsigned long, string> scene_texts_map;
+//map<uint32_t, string> scene_texts_map;
 vector<scene_text_pack> scene_texts;
 
 void
@@ -76,7 +77,7 @@ format_layer(string prev_layer,
 bool
 filter_chars(string& str) {
 	bool result = true;
-	for (unsigned long i = 0; i < str.length(); i++) {
+	for (uint32_t i = 0; i < str.length(); i++) {
 		if (str[i] >= ' ' && str[i] <= '~')
 			continue;
 
@@ -101,6 +102,9 @@ parse_texts(string layer_name,
 		packs.texts = str->get_string();
 		
 		if (packs.texts.empty()) return;
+
+		//printf("%s\n",packs.texts.c_str());
+		//cout << packs.texts << endl;
 		
 		//if (filter_chars(packs.texts)) return;
 		
@@ -119,7 +123,7 @@ traversal_offsets_tree(psb_t& psb,
 	string entry_name) {
 	psb_value_t *value = NULL;
 
-	for (unsigned long i = 0; i < offsets->size(); i++) {		
+	for (uint32_t i = 0; i < offsets->size(); i++) {		
 		unsigned char* entry_buff = offsets->get(i);
 		psb.unpack(value, entry_buff);
 
@@ -141,6 +145,9 @@ traversal_offsets_tree(psb_t& psb,
 				value->get_type() == psb_value_t::TYPE_N4) {
 				
 			}
+		} else {
+			entry_buff = offsets->get(i);
+			printf("unk struct %x\n",*entry_buff);
 		}
 	}
 }
@@ -150,7 +157,7 @@ traversal_object_tree(psb_t& psb,
 	string prev_layer) {
 	psb_value_t *value = NULL;
 
-	for (unsigned long i = 0; i < objects->size(); i++) {
+	for (uint32_t i = 0; i < objects->size(); i++) {
 		string entry_name = objects->get_name(i);
 		string layer_name = format_layer(prev_layer, entry_name);
 		unsigned char* entry_buff = objects->get_data(i);
@@ -162,8 +169,7 @@ traversal_object_tree(psb_t& psb,
 				traversal_offsets_tree(psb, (const psb_list_t *)value, layer_name, entry_name);
 			}
 			if (value->get_type() == psb_value_t::TYPE_OBJECTS) {
-				//char s[32];
-				//sprintf(s, "%d", i);
+				
 				traversal_object_tree(psb, (const psb_objects_t *)value, layer_name);
 			}
 			if (value->get_type() == psb_value_t::TYPE_STRING) {
@@ -174,6 +180,19 @@ traversal_object_tree(psb_t& psb,
 				value->get_type() == psb_value_t::TYPE_N4) {
 				
 			}
+
+		} else {
+			entry_buff = objects->get_data(i);
+			printf("unk struct %s:",layer_name.c_str());
+			for(int x = 0;x<10;x++){
+				printf("%02X ",entry_buff[x]);
+			}
+			printf("\n");
+
+			entry_buff = objects->get_data(i+1);
+
+			printf("%02X \n",entry_buff[0]);
+			
 		}
 	}
 }
@@ -207,21 +226,24 @@ int main(int argc,
 	size_t size;
 	string text_filename;
 
-	parse_commands(argc, argv);
+	//parse_commands(argc, argv);
 
+    script_filename = "/Users/yuanrui/Code/krkr_psbfile/01_com_027_01.ks.psb";
+    
 	if (!get_file_buffers(buff, size)) {
 		printf("open script file failed\n");
 		return 1;
 	}
-
+	
 	if (strncmp((const char *)buff, "PSB", 3) != 0) {
 		printf("invalid psb format\n");
 		exit(0);
 	}
 
 	psb_t psb(buff);
+	printf("parse psb");
 	const psb_objects_t* psb_objects = psb.get_objects();
-	printf("text_total_count:%d\n", psb.strings->entry_count);
+	printf("text_total_count:%u\n", psb.strings->entry_count);
 
 	printf("parse script scenes and selects\n");
 	traversal_object_tree(psb, psb_objects);

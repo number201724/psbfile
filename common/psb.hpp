@@ -10,25 +10,27 @@ qq:495159
 original by asmodean['expimg']
 */
 #include <stdio.h>
-#include <tchar.h>
-
 #include <string>
 #include <map>
 #include <vector>
+#include <stdint.h>
+
+
+#pragma  pack(1)
 
 using namespace std;
 
 struct PSBHDR {
 	unsigned char signature[4];
-	unsigned long type;
-	unsigned long unknown1;
-	unsigned long offset_names;
-	unsigned long offset_strings;
-	unsigned long offset_strings_data;
-	unsigned long offset_chunk_offsets;
-	unsigned long offset_chunk_lengths;
-	unsigned long offset_chunk_data;
-	unsigned long offset_entries;
+	uint32_t type;
+	uint32_t unknown1;
+	uint32_t offset_names;
+	uint32_t offset_strings;
+	uint32_t offset_strings_data;
+	uint32_t offset_chunk_offsets;
+	uint32_t offset_chunk_lengths;
+	uint32_t offset_chunk_data;
+	uint32_t offset_entries;
 };
 
 
@@ -45,8 +47,8 @@ class psb_value_t {
 public:
 	// Probably this should actually be kind as in get_number below. Don't care.
 	enum type_t {
-		TYPE_ARRAY = 0x31337, // fake
-
+		TYPE_ARRAY = 0xFF, // fake
+		TYPE_VOID = 0x1,
 		//number
 		TYPE_N0 = 0x4,
 		TYPE_N1 = 0x5,
@@ -77,6 +79,21 @@ protected:
 	type_t type;
 };
 /***************************************************************************
+* psb_void_t
+*/
+class psb_void_t : public psb_value_t {
+public:
+	psb_void_t(const psb_t&    psb,
+		unsigned char*& p);
+
+	virtual string get_type_string() {
+		return "psb_void_t";
+	}
+private:
+	unsigned char *buff;
+};
+
+/***************************************************************************
 * psb_number_t
 */
 class psb_number_t : public psb_value_t {
@@ -84,7 +101,7 @@ public:
 	psb_number_t(const psb_t&    psb,
 		unsigned char*& p);
 
-	unsigned long get_number() const;
+	uint32_t get_number() const;
 
 	static bool is_number(psb_value_t *value);
 
@@ -92,7 +109,8 @@ public:
 		return "psb_number_t";
 	}
 private:
-	unsigned long number;
+	uint32_t number;
+	unsigned char *buff;
 };
 /***************************************************************************
 * psb_array_t
@@ -102,13 +120,13 @@ public:
 	psb_array_t(const psb_t&    psb,
 		unsigned char*& p);
 
-	unsigned long size(void) const;
+	uint32_t size(void) const;
 
-	unsigned long get(unsigned long index) const;
+	uint32_t get(uint32_t index) const;
 
-	unsigned long  data_length;
-	unsigned long  entry_count;
-	unsigned long  entry_length;
+	uint32_t  data_length;
+	uint32_t  entry_count;
+	uint32_t  entry_length;
 	unsigned char* buff;
 
 	virtual string get_type_string() {
@@ -123,7 +141,7 @@ public:
 	psb_string_t(const psb_t&    psb,
 		unsigned char*& p);
 
-	unsigned long get_index() const;
+	uint32_t get_index() const;
 
 	string get_string() const;
 
@@ -143,11 +161,11 @@ public:
 
 	~psb_objects_t(void);
 
-	unsigned long size(void) const;
+	uint32_t size(void) const;
 
-	string get_name(unsigned long index) const;
+	string get_name(uint32_t index) const;
 
-	unsigned char* get_data(unsigned long index) const;
+	unsigned char* get_data(uint32_t index) const;
 
 	unsigned char* get_data(const string& name) const;
 
@@ -164,23 +182,23 @@ public:
 };
 
 /***************************************************************************
-* psb_list_t
+* psb_collection_t
 */
-class psb_list_t : public psb_value_t {
+class psb_collection_t : public psb_value_t {
 public:
-	psb_list_t(const psb_t&    psb,
+	psb_collection_t(const psb_t&    psb,
 		unsigned char*& p);
 
-	~psb_list_t(void);
+	~psb_collection_t(void);
 
-	unsigned long size(void) const;
+	uint32_t size(void) const;
 
-	unsigned char* get(unsigned long index) const;
+	unsigned char* get(uint32_t index) const;
 
-	template<class T> void unpack(T*& out, unsigned long index) const;
+	template<class T> void unpack(T*& out, uint32_t index) const;
 
 	virtual string get_type_string() {
-		return "psb_list_t";
+		return "psb_collection_t";
 	}
 
 public:
@@ -197,18 +215,18 @@ public:
 
 	~psb_t(void);
 
-	string get_name(unsigned long index) const;
+	string get_name(uint32_t index) const;
 
-	unsigned long get_number(unsigned char* p) const;
+	uint32_t get_number(unsigned char* p) const;
 
 	string get_string(unsigned char* p) const;
-	unsigned long get_string_index(unsigned char* p) const;
+	uint32_t get_string_index(unsigned char* p) const;
 
 	const psb_objects_t* get_objects(void) const;
 
 	unsigned char* get_chunk(unsigned char* p) const;
 
-	unsigned long get_chunk_length(unsigned char* p) const;
+	uint32_t get_chunk_length(unsigned char* p) const;
 
 	//string make_filename(const string& name) const;
 
@@ -217,7 +235,7 @@ public:
 	template<class T> void unpack(T*& out, unsigned char*& p) const;
 
 public:
-	unsigned long get_chunk_index(unsigned char* p) const;
+	uint32_t get_chunk_index(unsigned char* p) const;
 
 	unsigned char* buff;
 	PSBHDR*        hdr;
@@ -231,7 +249,7 @@ public:
 	unsigned char* chunk_data;
 
 	psb_objects_t* objects;
-	psb_list_t* expire_suffix_list;
+	psb_collection_t* expire_suffix_list;
 
 	string         extension;
 };
@@ -251,8 +269,8 @@ unpack(T*& out, const string& name) const {
 
 template<class T>
 void
-psb_list_t::
-unpack(T*& out, unsigned long index) const {
+psb_collection_t::
+unpack(T*& out, uint32_t index) const {
 	unsigned char* temp = get(index);
 
 	psb.unpack(out, temp);
