@@ -1,5 +1,5 @@
-#include "compress.h"
-//½âÑ¹Ëõ
+ï»¿#include "compress.h"
+//è§£å‹ç¼©
 void psb_pixel_uncompress(const unsigned char* pInput, unsigned char* pOutput, uint32_t actualSize, uint32_t align)
 {
 	int i;
@@ -34,7 +34,7 @@ void psb_pixel_uncompress(const unsigned char* pInput, unsigned char* pOutput, u
 		}
 	}
 }
-//²éÕÒÏàµÈµÄÊı¾İÊıÁ¿
+//æŸ¥æ‰¾ç›¸ç­‰çš„æ•°æ®æ•°é‡
 int psb_pixel_compress_bound(unsigned char *data, const unsigned char *end, uint32_t align, unsigned char *result)
 {
 	uint32_t count = 0;
@@ -46,13 +46,13 @@ int psb_pixel_compress_bound(unsigned char *data, const unsigned char *end, uint
 
 	for (i = 0; i < (PSB_LZSS_LOOKAHEAD + 2); i++)
 	{
-		p = &data[i * align];		//ÏÂÒ»¸öÎ»ÖÃ
+		p = &data[i * align];		//ä¸‹ä¸€ä¸ªä½ç½®
 
-		if (p >= end) {		//ÊÇ·ñ¶ÁÈ¡µ½Êı¾İÎ²
+		if (p >= end) {		//æ˜¯å¦è¯»å–åˆ°æ•°æ®å°¾
 			break;
 		}
 
-		if (memcmp(temp, &data[i * align], align) == 0) {	//±È½ÏÊı¾İÏàµÈ
+		if (memcmp(temp, &data[i * align], align) == 0) {	//æ¯”è¾ƒæ•°æ®ç›¸ç­‰
 			count++;
 		}
 		else {
@@ -60,15 +60,15 @@ int psb_pixel_compress_bound(unsigned char *data, const unsigned char *end, uint
 		}
 	}
 
-	//ÏàµÈÊı¾İ×îÉÙ3¸öÆğ²½
+	//ç›¸ç­‰æ•°æ®æœ€å°‘3ä¸ªèµ·æ­¥
 	if (count >= 3) {
-		*result = (count - 3) | PSB_LZSS_LOOKAHEAD;	//ÉèÖÃÊı¾İÏàµÈ±ê¼ÇÎ»
+		*result = (count - 3) | PSB_LZSS_LOOKAHEAD;	//è®¾ç½®æ•°æ®ç›¸ç­‰æ ‡è®°ä½
 		return count;
 	}
 
 	return 0;
 }
-//²éÕÒ²»ÏàµÈµÄÊı¾İÊıÁ¿
+//æŸ¥æ‰¾ä¸ç›¸ç­‰çš„æ•°æ®æ•°é‡
 int psb_pixel_compress_bound_np(unsigned char *data, const unsigned char *end, uint32_t align, unsigned char *result)
 {
 	uint32_t count = 1;
@@ -80,19 +80,19 @@ int psb_pixel_compress_bound_np(unsigned char *data, const unsigned char *end, u
 
 	for (i = 1; i < PSB_LZSS_LOOKAHEAD; i++)
 	{
-		p = &data[i * align];//ÏÂÒ»¸öÎ»ÖÃ
-		if (psb_pixel_compress_bound(p, end, align, result) == 0) {	//²éÕÒ²»ÏàµÈµÄÊı¾İ
+		p = &data[i * align];//ä¸‹ä¸€ä¸ªä½ç½®
+		if (psb_pixel_compress_bound(p, end, align, result) == 0) {	//æŸ¥æ‰¾ä¸ç›¸ç­‰çš„æ•°æ®
 			count++;
 		}
 		else {
 			break;
 		}
 	}
-	*result = (count - 1);	//²»ÏàµÈÊı¾İ´Ó1¿ªÊ¼
+	*result = (count - 1);	//ä¸ç›¸ç­‰æ•°æ®ä»1å¼€å§‹
 	return count;
 }
 
-//Ê¹ÓÃPSBµÄpixelËã·¨Ñ¹ËõÒ»¶ÎÍ¼Æ¬Êı¾İ
+//ä½¿ç”¨PSBçš„pixelç®—æ³•å‹ç¼©ä¸€æ®µå›¾ç‰‡æ•°æ®
 unsigned char* psb_pixel_compress(unsigned char *data, uint32_t length, uint32_t align, uint32_t *actualSize)
 {
 	unsigned char *result, *p, *end;
@@ -111,7 +111,7 @@ unsigned char* psb_pixel_compress(unsigned char *data, uint32_t length, uint32_t
 		count = psb_pixel_compress_bound(p, end, align, &cmdByte);
 
 		if (count > 0) {
-			//Ğ´ÈëÏàÍ¬µÄÊı¾İÕ¹¿ª
+			//å†™å…¥ç›¸åŒçš„æ•°æ®å±•å¼€
 			blockSize = align + sizeof(cmdByte);
 			result = realloc(result, pos + blockSize);
 			result[pos] = cmdByte;
@@ -119,7 +119,7 @@ unsigned char* psb_pixel_compress(unsigned char *data, uint32_t length, uint32_t
 		}
 		else {
 			count = psb_pixel_compress_bound_np(p, end, align, &cmdByte);
-			//Ğ´Èë²»Í¬µÄÊı¾İÕ¹¿ª
+			//å†™å…¥ä¸åŒçš„æ•°æ®å±•å¼€
 			blockSize = count * align + sizeof(cmdByte);
 			result = realloc(result, pos + blockSize);
 			result[pos] = cmdByte;

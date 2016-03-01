@@ -1,0 +1,5 @@
+/Users/yuanrui/Code/krkr_psbfile/jsoncpp/src/test_lib_json/CMakeFiles/jsoncpp_test.dir
+/Users/yuanrui/Code/krkr_psbfile/jsoncpp/src/jsontestrunner/CMakeFiles/jsoncpp_check.dir
+/Users/yuanrui/Code/krkr_psbfile/jsoncpp/src/jsontestrunner/CMakeFiles/jsoncpp_readerwriter_tests.dir
+/Users/yuanrui/Code/krkr_psbfile/jsoncpp/src/jsontestrunner/CMakeFiles/jsontestrunner_exe.dir
+/Users/yuanrui/Code/krkr_psbfile/jsoncpp/src/lib_json/CMakeFiles/jsoncpp_lib_static.dir
