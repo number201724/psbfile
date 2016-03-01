@@ -289,7 +289,7 @@ traversal_object_tree(psb_t& psb,
 			printf("invalid_type:%s:%02X\n", entry_name.c_str(), entry_buff[0]);
 		}
 	}
-/*
+
 	for (size_t i = 0; i < files.size(); i++)
 	{
 		cout << files[i].name << endl;
@@ -301,6 +301,10 @@ traversal_object_tree(psb_t& psb,
 			unsigned char *img = new unsigned char[image_size];
 
 			lzss_uncompress(files[i].resource->get_buff(), img, files[i].resource->get_length(), align);
+			fstream output1(files[i].name+"_",ios::out|ios::binary);
+			output1.write((const char*)files[i].resource->get_buff(),files[i].resource->get_length());
+			output1.flush();
+			output1.close();
 			fstream output(files[i].name,ios::out|ios::binary);
 			output.write((const char*)img,image_size);
 			output.flush();
@@ -317,7 +321,7 @@ traversal_object_tree(psb_t& psb,
 			output.flush();
 			output.close();
 		}
-	}*/
+	}
 }
 
 int main(int argc, char* argv[])
