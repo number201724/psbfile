@@ -1,0 +1,10 @@
+g++ -c psb.cpp -I"/usr/local/include" -o psb.o
+g++ -c	decompiler.cpp -I"/usr/local/include" -o decompiler.o
+gcc -c	decode.c -I"/usr/local/include" -o decode.o
+gcc -c	encode.c -I"/usr/local/include" -o encode.o
+g++ -c	compiler.cpp -I"/usr/local/include" -o compiler.o
+gcc -c compress.c -o compress.o
+g++ -c compress_test.cpp -o compress_test.o
+g++ -ljsoncpp  compress.o compress_test.o -o cpt -L"/usr/local/lib"
+g++ -ljsoncpp psb.o decompiler.o encode.o decode.o compress.o -o decompiler -L"/usr/local/lib"
+g++ -ljsoncpp psb.o compiler.o -o compiler -L"/usr/local/lib"
