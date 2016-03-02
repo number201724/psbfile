@@ -1,10 +1,11 @@
-#include "../../common/psb.hpp"
-#include "../../common/psb_stream.hpp"
-#include "../../zlib/zconf.h"
-#include "../../zlib/zlib.h"
+#include "psb.hpp"
+#include "psb_stream.hpp"
+#include "../zlib/zconf.h"
+#include "../zlib/zlib.h"
 #include <direct.h>
 
-#pragma comment(lib,"../../zlib/zdll.lib")
+#pragma comment(lib,"../zlib/zdll.lib")
+
 /*
 M2 PSB Editor
 Author:201724

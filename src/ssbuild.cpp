@@ -4,8 +4,8 @@
 	email:number201724@me.com
 	qq:495159
 */
-#include "../../common/psb.hpp"
-#include "../../common/psb_stream.hpp"
+#include "psb.hpp"
+#include "psb_stream.hpp"
 #include <direct.h>
 
 struct scene_text_pack

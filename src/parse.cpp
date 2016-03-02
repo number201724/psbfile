@@ -1,4 +1,4 @@
-#include "../../common/psb.hpp"
+#include "psb.hpp"
 #include <iostream>
 using namespace std;
 

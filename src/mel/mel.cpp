@@ -1,6 +1,6 @@
 #include <windows.h>
-#include "../../common/psb.hpp"
-#include "../../common/psb_stream.hpp"
+#include "../psb.hpp"
+#include "../psb_stream.hpp"
 
 HANDLE g_hHeap;
 
