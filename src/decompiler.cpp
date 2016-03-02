@@ -171,8 +171,13 @@ traversal_offsets_tree(psb_t& psb,
 				root.append(node);
 			}
 			if (value->get_type() == psb_value_t::TYPE_RESOURCE) {
+				psb_resource_t *resource = (psb_resource_t *)value;
+
 				Json::Value node(Json::stringValue);
-				node = "#META_DATA";
+				char *b64_data = b64_encode(resource->get_buff(),resource->get_length());
+				
+				node = "#binary#" + (string)b64_data;
+				free(b64_data);
 				root.append(node);
 			}
 		}
@@ -188,7 +193,6 @@ void
 traversal_object_tree(psb_t& psb,
 	const psb_objects_t *objects, string object_name, Json::Value &root) {
 	psb_value_t *value = NULL;
-	vector<file_object> files;
 	for (uint32_t i = 0; i < objects->size(); i++) {
 		string entry_name = objects->get_name(i);
 		unsigned char* entry_buff = objects->get_data(i);
@@ -265,61 +269,16 @@ traversal_object_tree(psb_t& psb,
 			if (value->get_type() == psb_value_t::TYPE_RESOURCE) {
 				psb_resource_t *resource = (psb_resource_t *)value;
 
-				file_object file;
-				if(object_name == ""){
-					file.name = entry_name;
-				} else {
-					file.name = object_name;
-				}
-				
-				file.resource = resource;
-				files.push_back(file);
-
 				Json::Value node(Json::stringValue);
 				char *b64_data = b64_encode(resource->get_buff(),resource->get_length());
 				
 				node = "#binary#" + (string)b64_data;
-				
 				free(b64_data);
-				//node = "#META_DATA#" + b64_encode(resource->get_buff(),resource->get_length());
 				root[entry_name] = node;
 			}
 		}
 		else {
 			printf("invalid_type:%s:%02X\n", entry_name.c_str(), entry_buff[0]);
-		}
-	}
-
-	for (size_t i = 0; i < files.size(); i++)
-	{
-		cout << files[i].name << endl;
-		if(root.isMember("compress")){
-			int height = root["height"].asInt();
-			int width = root["width"].asInt();
-			int align = root.isMember("pal") ? 1 : 4;
-			int image_size = height *  width * align;
-			unsigned char *img = new unsigned char[image_size];
-
-			lzss_uncompress(files[i].resource->get_buff(), img, files[i].resource->get_length(), align);
-			fstream output1(files[i].name+"_",ios::out|ios::binary);
-			output1.write((const char*)files[i].resource->get_buff(),files[i].resource->get_length());
-			output1.flush();
-			output1.close();
-			fstream output(files[i].name,ios::out|ios::binary);
-			output.write((const char*)img,image_size);
-			output.flush();
-			output.close();
-			//convert_pixel(img, width, height, align);
-			//save_bmp(files[i].name, width, height, img);
-			//printf("true size:%08x\n",image_size);
-			//exit(0);
-
-			delete[] img;
-		} else {
-			fstream output(files[i].name,ios::out|ios::binary);
-			output.write((const char *)files[i].resource->get_buff(),files[i].resource->get_length());
-			output.flush();
-			output.close();
 		}
 	}
 }

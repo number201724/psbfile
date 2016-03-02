@@ -114,13 +114,13 @@ std::string valueToString(double value) {
                                                       // visual studio 2005 to
                                                       // avoid warning.
 #if defined(WINCE)
-  len = _snprintf(buffer, sizeof(buffer), "%.17lf", value);
+  len = _snprintf(buffer, sizeof(buffer), "%lf", value);
 #else
-  len = sprintf_s(buffer, sizeof(buffer), "%.17lf", value);
+  len = sprintf_s(buffer, sizeof(buffer), "%lf", value);
 #endif
 #else
   if (isfinite(value)) {
-    len = snprintf(buffer, sizeof(buffer), "%.17lf", value);
+    len = snprintf(buffer, sizeof(buffer), "%lf", value);
   } else {
     // IEEE standard states that NaN values will not compare to themselves
     if (value != value) {

@@ -26,7 +26,7 @@ void psb_pixel_uncompress(const unsigned char* pInput, unsigned char* pOutput, u
 		else {
 			count = (cmdByte + 1) * align;
 
-			for (int i = 0; i < count; i++) {
+			for (i = 0; i < count; i++) {
 				*pOutput++ = *pInput++;
 			}
 
