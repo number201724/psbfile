@@ -48,40 +48,63 @@ class psb_value_t {
 public:
 	// Probably this should actually be kind as in get_number below. Don't care.
 	enum type_t {
-		TYPE_ARRAY = 0xFF, // fake
+
+		TYPE_NONE = 0x0,
 		TYPE_NULL = 0x1, // 0
-		//TYPE_TRUE = 0x2, //1
+		TYPE_FALSE = 0x2, //??
+		TYPE_TRUE = 0x3,  //??
 
-		//TYPE_TRUE2 = 0x3,  unknown
+		//int
+		TYPE_NUMBER_N0 = 0x4,
+		TYPE_NUMBER_N1 = 0x5,
+		TYPE_NUMBER_N2 = 0x6,
+		TYPE_NUMBER_N3 = 0x7,
+		TYPE_NUMBER_N4 = 0x8,
+		TYPE_NUMBER_N5 = 0x9,
+		TYPE_NUMBER_N6 = 0xA,
+		TYPE_NUMBER_N7 = 0xB,
+		TYPE_NUMBER_N8 = 0xC,
 
-		//number
-		TYPE_N0 = 0x4,
-		TYPE_N1 = 0x5,
-		TYPE_N2 = 0x6,
-		TYPE_N3 = 0x7,
-		TYPE_N4 = 0x8,
-		//uint64
-		TYPE_N5 = 0x9,
-		TYPE_N6 = 0xA,
-		TYPE_N7 = 0xB,
-		TYPE_N8 = 0xC,
-		////int32
-		//TYPE_N9 = 0xD,
-		//TYPE_N10 = 0xE,
-		//TYPE_N11 = 0xF,
-		//TYPE_N12 = 0x10,
-		
-		TYPE_STRING = 0x15,
-		TYPE_STRING2 = 0x16,
+		//array N(NUMBER) is count mask
+		TYPE_ARRAY_N1 = 0xD,
+		TYPE_ARRAY_N2 = 0xE,
+		TYPE_ARRAY_N3 = 0xF,
+		TYPE_ARRAY_N4 = 0x10,
+		TYPE_ARRAY_N5 = 0x11,
+		TYPE_ARRAY_N6 = 0x12,
+		TYPE_ARRAY_N7 = 0x13,
+		TYPE_ARRAY_N8 = 0x14,
+
+		//index of strings table
+		TYPE_STRING_N1 = 0x15,
+		TYPE_STRING_N2 = 0x16,
+		TYPE_STRING_N3 = 0x17,
+		TYPE_STRING_N4 = 0x18,
 
 		//resource of thunk
-		TYPE_RESOURCE = 0x19,
+		TYPE_RESOURCE_N1 = 0x19,
+		TYPE_RESOURCE_N2 = 0x1A,
+		TYPE_RESOURCE_N3 = 0x1B,
+		TYPE_RESOURCE_N4 = 0x1C,
 
+		//fpu value
 		TYPE_FLOAT0 = 0x1D,
 		TYPE_FLOAT = 0x1E,
 		TYPE_DOUBLE = 0x1F,
+
+		//objects
 		TYPE_COLLECTION = 0x20,	//object collection
 		TYPE_OBJECTS = 0x21,	//object
+
+
+		//used by compiler,it's fake
+		TYPE_INTEGER = 0x80,
+		TYPE_STRING = 0x81,
+		TYPE_RESOURCE = 0x82,
+		TYPE_DECIMAL = 0x83,
+		TYPE_ARRAY = 0x84,
+		TYPE_BOOLEAN = 0x85,
+		TYPE_BTREE = 0x86,
 	};
 
 	psb_value_t(const psb_t&    psb,
@@ -89,7 +112,7 @@ public:
 		unsigned char*& p);
 	psb_value_t(const psb_t&    psb,
 		unsigned char*& p);
-	
+
 
 	virtual ~psb_value_t(void);
 
@@ -118,7 +141,25 @@ public:
 private:
 	unsigned char *buff;
 };
+/***************************************************************************
+* psb_null_t
+*/
+class psb_boolean_t : public psb_value_t {
+public:
+	psb_boolean_t(const psb_t&    psb,
+		unsigned char*& p,
+		psb_value_t::type_t type);
 
+	virtual string get_type_string() {
+		return "psb_boolean_t";
+	}
+
+	bool get_boolean();
+
+private:
+	unsigned char *buff;
+	bool value;
+};
 /***************************************************************************
 * psb_resource_t
 */
@@ -130,8 +171,9 @@ public:
 
 	unsigned char *get_buff();
 	uint32_t get_length();
-
+	uint32_t get_index();
 protected:
+	uint32_t chunk_index;
 	unsigned char *chunk_buff;
 	uint32_t chunk_len;
 };
@@ -179,7 +221,7 @@ private:
 class psb_array_t : public psb_value_t {
 public:
 	psb_array_t(const psb_t&    psb,
-		unsigned char*& p);
+		unsigned char*& p, psb_value_t::type_t type);
 
 	uint32_t size(void) const;
 
@@ -278,7 +320,7 @@ public:
 
 	string get_name(uint32_t index) const;
 
-	bool get_number(unsigned char* p, psb_number_t::psb_number_value_t &value,psb_number_t::psb_number_type_t &number_type) const;
+	bool get_number(unsigned char* p, psb_number_t::psb_number_value_t &value, psb_number_t::psb_number_type_t &number_type) const;
 
 	string get_string(unsigned char* p) const;
 	uint32_t get_string_index(unsigned char* p) const;

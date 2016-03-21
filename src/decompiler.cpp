@@ -1,9 +1,9 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <direct.h>
 #include <json/json.h>
 #include "psb.hpp"
-#include "b64.h"
 #include "compress.h"
 
 using namespace std;
@@ -119,21 +119,28 @@ traversal_offsets_tree(psb_t& psb,
 				Json::Value node(Json::objectValue);
 				traversal_object_tree(psb, (const psb_objects_t *)value, entry_name, node);
 				root.append(node);
-
 			}
+
+			if (value->get_type() == psb_value_t::TYPE_TRUE || value->get_type() == psb_value_t::TYPE_FALSE) {
+
+				Json::Value node(Json::booleanValue);
+				psb_boolean_t *psb_boolean = (psb_boolean_t*)value;
+				node = psb_boolean->get_boolean();
+				root.append(node);
+			}
+
 			//=======================================================
-			if (value->get_type() == psb_value_t::TYPE_STRING) {
+			if (value->get_type() == psb_value_t::TYPE_STRING_N1) {
 
 				Json::Value node(Json::stringValue);
 				psb_string_t *psb_string = (psb_string_t*)value;
 				node = psb_string->get_string();
 				root.append(node);
-
 			}
 			//=======================================================
-			if (value->get_type() == psb_value_t::TYPE_N0 || value->get_type() == psb_value_t::TYPE_N1 ||
-				value->get_type() == psb_value_t::TYPE_N2 || value->get_type() == psb_value_t::TYPE_N3 ||
-				value->get_type() == psb_value_t::TYPE_N4) {
+			if (value->get_type() == psb_value_t::TYPE_NUMBER_N0 || value->get_type() == psb_value_t::TYPE_NUMBER_N1 ||
+				value->get_type() == psb_value_t::TYPE_NUMBER_N2 || value->get_type() == psb_value_t::TYPE_NUMBER_N3 ||
+				value->get_type() == psb_value_t::TYPE_NUMBER_N4) {
 
 				Json::Value node(Json::uintValue);
 				psb_number_t *number = (psb_number_t*)value;
@@ -157,8 +164,8 @@ traversal_offsets_tree(psb_t& psb,
 				root.append(node);
 			}
 
-			if (value->get_type() == psb_value_t::TYPE_N5 || value->get_type() == psb_value_t::TYPE_N6 ||
-				value->get_type() == psb_value_t::TYPE_N7 || value->get_type() == psb_value_t::TYPE_N8) {
+			if (value->get_type() == psb_value_t::TYPE_NUMBER_N5 || value->get_type() == psb_value_t::TYPE_NUMBER_N6 ||
+				value->get_type() == psb_value_t::TYPE_NUMBER_N7 || value->get_type() == psb_value_t::TYPE_NUMBER_N8) {
 
 				Json::Value node(Json::uintValue);
 				psb_number_t *number = (psb_number_t*)value;
@@ -170,14 +177,13 @@ traversal_offsets_tree(psb_t& psb,
 				Json::Value node(Json::nullValue);
 				root.append(node);
 			}
-			if (value->get_type() == psb_value_t::TYPE_RESOURCE) {
+			if (value->get_type() == psb_value_t::TYPE_RESOURCE_N1 || value->get_type() == psb_value_t::TYPE_RESOURCE_N2 ||
+				value->get_type() == psb_value_t::TYPE_RESOURCE_N3 || value->get_type() == psb_value_t::TYPE_RESOURCE_N4) {
 				psb_resource_t *resource = (psb_resource_t *)value;
-
 				Json::Value node(Json::stringValue);
-				char *b64_data = b64_encode(resource->get_buff(),resource->get_length());
-				
-				node = "#binary#" + (string)b64_data;
-				free(b64_data);
+				char temp[32];
+				_itoa_s(resource->get_index(), temp, 10);
+				node = "#resource#" + (string)temp;
 				root.append(node);
 			}
 		}
@@ -185,8 +191,6 @@ traversal_offsets_tree(psb_t& psb,
 		else {
 			printf("invalid_type:%s,%02X\n", entry_name.c_str(), entry_buff[0]);
 		}
-
-
 	}
 }
 void
@@ -216,9 +220,18 @@ traversal_object_tree(psb_t& psb,
 				traversal_object_tree(psb, (const psb_objects_t *)value, entry_name, node);
 				root[entry_name] = node;
 			}
+
+			if (value->get_type() == psb_value_t::TYPE_TRUE || value->get_type() == psb_value_t::TYPE_FALSE) {
+
+				Json::Value node(Json::booleanValue);
+				psb_boolean_t *psb_boolean = (psb_boolean_t*)value;
+				node = psb_boolean->get_boolean();
+				root[entry_name] = node;
+			}
+
 			//=======================================================
 
-			if (value->get_type() == psb_value_t::TYPE_STRING) {
+			if (value->get_type() == psb_value_t::TYPE_STRING_N1) {
 
 				Json::Value node(Json::stringValue);
 				psb_string_t *psb_string = (psb_string_t*)value;
@@ -226,9 +239,9 @@ traversal_object_tree(psb_t& psb,
 				root[entry_name] = node;
 			}
 			//=======================================================
-			if (value->get_type() == psb_value_t::TYPE_N0 || value->get_type() == psb_value_t::TYPE_N1 ||
-				value->get_type() == psb_value_t::TYPE_N2 || value->get_type() == psb_value_t::TYPE_N3 ||
-				value->get_type() == psb_value_t::TYPE_N4) {
+			if (value->get_type() == psb_value_t::TYPE_NUMBER_N0 || value->get_type() == psb_value_t::TYPE_NUMBER_N1 ||
+				value->get_type() == psb_value_t::TYPE_NUMBER_N2 || value->get_type() == psb_value_t::TYPE_NUMBER_N3 ||
+				value->get_type() == psb_value_t::TYPE_NUMBER_N4) {
 
 				Json::Value node(Json::uintValue);
 				psb_number_t *number = (psb_number_t*)value;
@@ -251,8 +264,8 @@ traversal_object_tree(psb_t& psb,
 				root[entry_name] = node;
 			}
 
-			if (value->get_type() == psb_value_t::TYPE_N5 || value->get_type() == psb_value_t::TYPE_N6 ||
-				value->get_type() == psb_value_t::TYPE_N7 || value->get_type() == psb_value_t::TYPE_N8) {
+			if (value->get_type() == psb_value_t::TYPE_NUMBER_N5 || value->get_type() == psb_value_t::TYPE_NUMBER_N6 ||
+				value->get_type() == psb_value_t::TYPE_NUMBER_N7 || value->get_type() == psb_value_t::TYPE_NUMBER_N8) {
 
 				Json::Value node(Json::uintValue);
 				psb_number_t *number = (psb_number_t*)value;
@@ -266,14 +279,14 @@ traversal_object_tree(psb_t& psb,
 				root[entry_name] = node;
 			}
 
-			if (value->get_type() == psb_value_t::TYPE_RESOURCE) {
+			if (value->get_type() == psb_value_t::TYPE_RESOURCE_N1 || value->get_type() == psb_value_t::TYPE_RESOURCE_N2 ||
+				value->get_type() == psb_value_t::TYPE_RESOURCE_N3 || value->get_type() == psb_value_t::TYPE_RESOURCE_N4) {
 				psb_resource_t *resource = (psb_resource_t *)value;
 
 				Json::Value node(Json::stringValue);
-				char *b64_data = b64_encode(resource->get_buff(),resource->get_length());
-				
-				node = "#binary#" + (string)b64_data;
-				free(b64_data);
+				char temp[32];
+				_itoa_s(resource->get_index(), temp, 10);
+				node = "#resource#" + (string)temp;
 				root[entry_name] = node;
 			}
 		}
@@ -283,27 +296,74 @@ traversal_object_tree(psb_t& psb,
 	}
 }
 
+
+void export_res(psb_t &psb, string source_name)
+{
+	Json::Value res(Json::arrayValue);
+
+	_mkdir("res");
+	for (uint32_t i = 0; i < psb.chunk_offsets->size(); i++)
+	{
+		char filename[256];
+
+		uint32_t offset = psb.chunk_offsets->get(i);
+		uint32_t length = psb.chunk_lengths->get(i);
+
+		sprintf_s(filename, "res/%d.bin", i);
+
+		fstream output(filename, ios::trunc | ios::binary | ios::out);
+		if (output.is_open())
+		{
+			output.write((const char*)psb.chunk_data + offset, length);
+			output.flush();
+			output.close();
+
+			res[i] = filename;
+		}
+	}
+	fstream output(source_name + ".res.json", ios::trunc | ios::out);
+	output << res.toStyledString() << endl;
+	output.flush(); output.close();
+}
 int main(int argc, char* argv[])
 {
 	Json::Value root;
 	uint32_t pos;
 	char* data;
-	fstream reader("title.psb", ios::binary | ios::in);
-	fstream writer("title.json", ios::out);
+
+	if(argc < 2)
+	{
+		cout << "usage: decompiler <psb_file>" << endl;
+		return 0;
+	}
+
+
+	string filename = argv[1];
+	fstream reader(filename, ios::binary | ios::in);
+	fstream writer(filename + ".json", ios::out);
+
+	if (!reader.is_open()) {
+		cout << "open psb file failed" << endl;
+		return 1;
+	}
+	if (!writer.is_open()) {
+		cout << "open output file failed" << endl;
+		return 1;
+	}
 
 	reader.seekg(0, ios::end);
-	pos = reader.tellg();
+	pos = (uint32_t)reader.tellg();
 	reader.seekg(0, ios::beg);
 	data = new char[pos];
 
 	reader.read(data, pos);
 	psb_t psb((unsigned char*)data);
 	const psb_objects_t *objects = psb.get_objects();
-	
 
 	traversal_object_tree(psb, objects, "", root);
-
 	writer << root.toStyledString() << endl;
+
+	export_res(psb, filename);
 
 	return 0;
 }

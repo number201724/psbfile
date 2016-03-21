@@ -7,7 +7,7 @@ void psb_pixel_uncompress(const unsigned char* pInput, unsigned char* pOutput, u
 	uint32_t totalBytes = 0;
 	int cmdByte = 0;
 
-	for (; actualSize != totalBytes; )
+	while (actualSize != totalBytes)
 	{
 		cmdByte = *pInput++; totalBytes++;
 

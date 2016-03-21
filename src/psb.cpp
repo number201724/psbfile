@@ -49,6 +49,31 @@ psb_null_t(const psb_t&    psb,
 {
 	buff = p;
 }
+
+/***************************************************************************
+* psb_boolean_t
+*/
+psb_boolean_t::
+psb_boolean_t(const psb_t&    psb,
+	unsigned char*& p, psb_value_t::type_t type)
+	: psb_value_t(psb, type, p)
+{
+	if(type == psb_value_t::TYPE_FALSE)
+	{
+		value = false;
+	} else
+	{
+		value = true;
+	}
+
+	buff = p;
+}
+bool
+psb_boolean_t::
+get_boolean()
+{
+	return value;
+}
 /***************************************************************************
 * psb_resource_t
 */
@@ -56,10 +81,17 @@ psb_resource_t::
 psb_resource_t(const psb_t&    psb,
 	unsigned char*& p,
 	psb_value_t::type_t type) :
-	psb_value_t(psb, type, p)
+	psb_value_t(psb, type, p), chunk_index(-1)
 {
+	chunk_index = psb.get_chunk_index(p);
 	chunk_buff = psb.get_chunk(p);
 	chunk_len = psb.get_chunk_length(p);
+}
+uint32_t
+psb_resource_t::
+get_index()
+{
+	return chunk_index;
 }
 unsigned char *
 psb_resource_t::
@@ -119,9 +151,9 @@ bool
 psb_number_t::
 is_number_type(psb_value_t *value)
 {
-	if (value->get_type() == psb_value_t::TYPE_N0 || value->get_type() == psb_value_t::TYPE_N1 ||
-		value->get_type() == psb_value_t::TYPE_N2 || value->get_type() == psb_value_t::TYPE_N3 ||
-		value->get_type() == psb_value_t::TYPE_N4) {
+	if (value->get_type() == psb_value_t::TYPE_NUMBER_N0 || value->get_type() == psb_value_t::TYPE_NUMBER_N1 ||
+		value->get_type() == psb_value_t::TYPE_NUMBER_N2 || value->get_type() == psb_value_t::TYPE_NUMBER_N3 ||
+		value->get_type() == psb_value_t::TYPE_NUMBER_N4) {
 		return true;
 	}
 	return false;
@@ -132,15 +164,15 @@ is_number_type(psb_value_t *value)
 */
 psb_array_t::
 psb_array_t(const psb_t&    psb,
-	unsigned char*& p)
-	: psb_value_t(psb, TYPE_ARRAY, p),
+	unsigned char*& p, psb_value_t::type_t type)
+	: psb_value_t(psb, type, p),
 	data_length(0)
 {
 	uint32_t n = *p++ - 0xC;
-	
+
 	data_length += sizeof(unsigned char);
 	uint32_t v = 0;
-	
+
 
 	for (uint32_t i = 0; i < n; i++) {
 		v |= *p++ << (i * 8);
@@ -182,7 +214,7 @@ get(uint32_t index) const {
 psb_string_t::
 psb_string_t(const psb_t&    psb,
 	unsigned char*& p)
-	: psb_value_t(psb, TYPE_STRING, p),
+	: psb_value_t(psb, TYPE_STRING_N1, p),
 	buff(--p)
 {
 
@@ -209,8 +241,8 @@ psb_objects_t(const psb_t&    psb,
 	: psb_value_t(psb, TYPE_OBJECTS, p),
 	buff(p)
 {
-	names = new psb_array_t(psb, buff);
-	offsets = new psb_array_t(psb, buff);
+	names = new psb_array_t(psb, buff, (psb_value_t::type_t)buff[0]);
+	offsets = new psb_array_t(psb, buff, (psb_value_t::type_t)buff[0]);
 }
 
 psb_objects_t::
@@ -259,7 +291,7 @@ psb_collection_t(const psb_t&    psb,
 	unsigned char*& p)
 	: psb_value_t(psb, TYPE_COLLECTION, p)
 {
-	offsets = new psb_array_t(psb, p);
+	offsets = new psb_array_t(psb, p, (psb_value_t::type_t)p[0]);
 	buff = p;
 }
 
@@ -287,23 +319,23 @@ psb_t::
 psb_t(unsigned char* buff) {
 	this->buff = buff;
 	hdr = (PSBHDR*)buff;
-	
+
 	unsigned char* p = this->buff + hdr->offset_names;
 
-	str1 = new psb_array_t(*this, p);
-	str2 = new psb_array_t(*this, p);
-	str3 = new psb_array_t(*this, p);
-	
+	str1 = new psb_array_t(*this, p, (psb_value_t::type_t)p[0]);
+	str2 = new psb_array_t(*this, p, (psb_value_t::type_t)p[0]);
+	str3 = new psb_array_t(*this, p, (psb_value_t::type_t)p[0]);
+
 	p = buff + hdr->offset_strings;
-	strings = new psb_array_t(*this, p);
+	strings = new psb_array_t(*this, p, (psb_value_t::type_t)p[0]);
 
 	strings_data = (char*)(buff + hdr->offset_strings_data);
 
 	p = buff + hdr->offset_chunk_offsets;
-	chunk_offsets = new psb_array_t(*this, p);
+	chunk_offsets = new psb_array_t(*this, p, (psb_value_t::type_t)p[0]);
 
 	p = buff + hdr->offset_chunk_lengths;
-	chunk_lengths = new psb_array_t(*this, p);
+	chunk_lengths = new psb_array_t(*this, p, (psb_value_t::type_t)p[0]);
 
 	chunk_data = buff + hdr->offset_chunk_data;
 
@@ -338,7 +370,6 @@ string
 psb_t::
 get_name(uint32_t index) const {
 	string accum;
-
 	uint32_t a = str3->get(index);
 	uint32_t b = str2->get(a);
 
@@ -346,7 +377,7 @@ get_name(uint32_t index) const {
 		uint32_t c = str2->get(b);
 		uint32_t d = str1->get(c);
 		uint32_t e = b - d;
-
+		
 		b = c;
 
 		accum = (char)e + accum;
@@ -355,7 +386,6 @@ get_name(uint32_t index) const {
 			break;
 		}
 	}
-
 	return accum;
 }
 
@@ -481,23 +511,33 @@ unpack(unsigned char*& p) const {
 	switch (type) {
 	case psb_value_t::TYPE_NULL:
 		return new psb_null_t(*this, p, (psb_value_t::type_t)type);
+	case psb_value_t::TYPE_FALSE:
+	case psb_value_t::TYPE_TRUE:
+		return new psb_boolean_t(*this, p, (psb_value_t::type_t)type);
 
-	case psb_value_t::TYPE_N0:
-	case psb_value_t::TYPE_N1:
-	case psb_value_t::TYPE_N2:
-	case psb_value_t::TYPE_N3:
-	case psb_value_t::TYPE_N4:
-	case psb_value_t::TYPE_N5:
-	case psb_value_t::TYPE_N6:
-	case psb_value_t::TYPE_N7:
-	case psb_value_t::TYPE_N8:
+	case psb_value_t::TYPE_NUMBER_N0:
+	case psb_value_t::TYPE_NUMBER_N1:
+	case psb_value_t::TYPE_NUMBER_N2:
+	case psb_value_t::TYPE_NUMBER_N3:
+	case psb_value_t::TYPE_NUMBER_N4:
+	case psb_value_t::TYPE_NUMBER_N5:
+	case psb_value_t::TYPE_NUMBER_N6:
+	case psb_value_t::TYPE_NUMBER_N7:
+	case psb_value_t::TYPE_NUMBER_N8:
 	case psb_value_t::TYPE_FLOAT:
 	case psb_value_t::TYPE_FLOAT0:
 	case psb_value_t::TYPE_DOUBLE:
 		return new psb_number_t(*this, --p, (psb_value_t::type_t)type);
 
-	case psb_value_t::TYPE_ARRAY:
-		return new psb_array_t(*this, p);
+	case psb_value_t::TYPE_ARRAY_N1:
+	case psb_value_t::TYPE_ARRAY_N2:
+	case psb_value_t::TYPE_ARRAY_N3:
+	case psb_value_t::TYPE_ARRAY_N4:
+	case psb_value_t::TYPE_ARRAY_N5:
+	case psb_value_t::TYPE_ARRAY_N6:
+	case psb_value_t::TYPE_ARRAY_N7:
+	case psb_value_t::TYPE_ARRAY_N8:
+		return new psb_array_t(*this, --p, (psb_value_t::type_t)type);
 
 	case psb_value_t::TYPE_COLLECTION:
 		return new psb_collection_t(*this, p);
@@ -505,11 +545,16 @@ unpack(unsigned char*& p) const {
 	case psb_value_t::TYPE_OBJECTS:
 		return new psb_objects_t(*this, p);
 
-	case psb_value_t::TYPE_RESOURCE:
-		return new psb_resource_t(*this, --p, psb_value_t::TYPE_RESOURCE);
+	case psb_value_t::TYPE_RESOURCE_N1:
+	case psb_value_t::TYPE_RESOURCE_N2:
+	case psb_value_t::TYPE_RESOURCE_N3:
+	case psb_value_t::TYPE_RESOURCE_N4:
+		return new psb_resource_t(*this, --p, psb_value_t::TYPE_RESOURCE_N1);
 
-	case psb_value_t::TYPE_STRING:
-	case psb_value_t::TYPE_STRING2:
+	case psb_value_t::TYPE_STRING_N1:
+	case psb_value_t::TYPE_STRING_N2:
+	case psb_value_t::TYPE_STRING_N3:
+	case psb_value_t::TYPE_STRING_N4:
 		return new psb_string_t(*this, p);
 
 	default:
