@@ -1,4 +1,0 @@
-M2Psb.mel 为lneditor插件 支持选择支等特殊处理 过滤了英文字符与空格数字等 如果不想使用过滤请使用单独版本
-mdftool.exe 解压mdf开头的文件名 参数是文件路径
-scene_parse.exe 解析psb文件包内的文本信息 参数是文件路径
-scene_build.exe 封包文本回PSB文件 第一个参数PSB文件路径 第二个参数文本路径
