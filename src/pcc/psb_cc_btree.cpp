@@ -154,12 +154,7 @@ void psb_cc_btree::make_offset(tree_desc *desc)
 
 	uint32_t count = (m - n);
 
-	if(desc->c == 0)		//end point link to names table index
-	{
-		uint32_t index = get_key_index(get_name(desc));
-		_offsets.set_value(desc->node_id, index);
-		return;
-	}
+
 
 	uint32_t pos = _tree.size();
 	if (pos <= m || pos <= n)
@@ -172,6 +167,13 @@ void psb_cc_btree::make_offset(tree_desc *desc)
 	uint32_t offset = pos - n;
 	_tree.set_value(end_pos, 0);
 	_offsets.set_value(desc->node_id, offset);
+
+	if (desc->c == 0)		//end point link to names table index
+	{
+		uint32_t index = get_key_index(get_name(desc));
+		_offsets.set_value(desc->node_id, index);
+		return;
+	}
 
 	desc->pos_beg = pos;
 	desc->pos_end = end_pos;

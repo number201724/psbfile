@@ -13,6 +13,7 @@ public:
 
 	uint32_t add_string(string value);
 	uint32_t add_names(string value);
+	string get_names(uint32_t index);
 	psb_cc_base* pack(Json::Value& source_code);
 
 	psb_cc_base* get_entries();

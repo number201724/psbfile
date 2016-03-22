@@ -62,7 +62,10 @@ uint32_t psb_cc::add_names(string value)
 
 	return _name_table.size() - 1;
 }
-
+string psb_cc::get_names(uint32_t index)
+{
+	return _name_table[index];
+}
 psb_cc_base* psb_cc::pack(Json::Value& source_code)
 {
 	psb_cc_base *base = NULL;
