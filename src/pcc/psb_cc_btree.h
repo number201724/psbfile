@@ -4,7 +4,7 @@
 
 struct tree_desc
 {
-	char c;		//current char
+	unsigned char c;		//current char
 	uint32_t node_id;	//tree id with _tree
 	struct tree_desc* prev;	//parent char
 	vector<struct tree_desc*> childs;//next chars
@@ -40,7 +40,7 @@ public:
 	~psb_cc_btree();
 	
 	void insert_tree(string value);
-	static tree_desc *get_desc(tree_desc *desc, char c, bool is_end = false);
+	static tree_desc *get_desc(tree_desc *desc, unsigned char c, bool is_end = false);
 
 	void insert(string value);
 	virtual bool compile();

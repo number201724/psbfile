@@ -25,7 +25,7 @@ void psb_cc_btree::insert(string value)
 	insert_tree(value);
 }
 
-tree_desc *psb_cc_btree::get_desc(tree_desc *desc, char c, bool is_end)
+tree_desc *psb_cc_btree::get_desc(tree_desc *desc, unsigned char c, bool is_end)
 {
 	for (uint32_t i = 0; i < desc->childs.size(); i++)
 	{
@@ -44,7 +44,7 @@ void psb_cc_btree::insert_tree(string value)
 	tree_desc* prev = &_desc;
 	for (uint32_t i = 0; i < value.length(); i++)
 	{
-		char c = value[i];
+		unsigned char c = (unsigned char)value[i];
 		prev = get_desc(prev, c);
 	}
 
