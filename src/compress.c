@@ -42,6 +42,8 @@ int psb_pixel_compress_bound(unsigned char *data, const unsigned char *end, uint
 	unsigned char temp[4];
 
 	int i;
+
+
 	memcpy(temp, data, align);
 
 	for (i = 0; i < (PSB_LZSS_LOOKAHEAD + 2); i++)
@@ -76,11 +78,13 @@ int psb_pixel_compress_bound_np(unsigned char *data, const unsigned char *end, u
 	unsigned char temp[4];
 
 	int i;
+
 	memcpy(temp, data, align);
 
 	for (i = 1; i < PSB_LZSS_LOOKAHEAD; i++)
 	{
 		p = &data[i * align];//下一个位置
+		if(p >= end) break;
 		if (psb_pixel_compress_bound(p, end, align, result) == 0) {	//查找不相等的数据
 			count++;
 		}

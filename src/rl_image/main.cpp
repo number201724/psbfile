@@ -9,6 +9,7 @@ EMail:number201724@me.com
 #include "def.h"
 #include <direct.h>
 #include "../compress.h"
+#include <Windows.h>
 
 #define BMP_BIT 32
 
@@ -42,6 +43,17 @@ struct BITMAP_INFO_HDR {
 };
 #pragma pack()
 
+wchar_t* UTF_8ToUnicode(string utf8)
+{
+	static wchar_t c[512];
+	bzero(&c,sizeof(c));
+
+	const char* s = utf8.c_str();
+
+	MultiByteToWideChar(CP_UTF8,0,s,strlen(s),c,512);
+	return c;
+}
+
 bool save_bmp(string filename, int width, int height, void *data)
 {
 	int nAlignWidth = width * 4;
@@ -63,13 +75,25 @@ bool save_bmp(string filename, int width, int height, void *data)
 	HeaderInfo.biYPelsPerMeter = 0;
 	HeaderInfo.biClrUsed = 0;
 	HeaderInfo.biClrImportant = 0;
-	fstream output(filename + ".bmp", ios::binary | ios::out);
 
-	output.write((const char *)&Header, sizeof(Header));
-	output.write((const char *)&HeaderInfo, sizeof(HeaderInfo));
-	output.write((const char *)data, HeaderInfo.biSizeImage);
-	output.flush();
-	output.close();
+	HANDLE hFile = CreateFileW(UTF_8ToUnicode(filename+".bmp"),GENERIC_ALL,0,NULL,CREATE_ALWAYS,FILE_ATTRIBUTE_NORMAL,NULL);
+	if(hFile)
+	{
+		DWORD n;
+		WriteFile(hFile,(LPCVOID)&Header, sizeof(Header),&n,NULL);
+		WriteFile(hFile,(LPCVOID)&HeaderInfo, sizeof(HeaderInfo),&n,NULL);
+		WriteFile(hFile,(LPCVOID)data, HeaderInfo.biSizeImage,&n,NULL);
+		CloseHandle(hFile);
+	}
+
+	//linux or mac
+	//fstream output(filename + ".bmp", ios::binary | ios::out);
+
+	//output.write((const wchar_t *)&Header, sizeof(Header));
+	//output.write((const wchar_t *)&HeaderInfo, sizeof(HeaderInfo));
+	//output.write((const wchar_t *)data, HeaderInfo.biSizeImage);
+	//output.flush();
+	//output.close();
 	return true;
 }
 
