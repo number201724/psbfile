@@ -10,7 +10,7 @@ public:
 	~psb_cc();
 
 	bool cc(Json::Value &src);
-
+	void precache_name_all(Json::Value &source_code);
 	uint32_t add_string(string value);
 	uint32_t add_names(string value);
 	string get_names(uint32_t index);

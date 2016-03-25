@@ -154,8 +154,6 @@ void psb_cc_btree::make_offset(tree_desc *desc)
 
 	uint32_t count = (m - n);
 
-
-
 	uint32_t pos = _tree.size();
 	if (pos <= m || pos <= n)
 	{
@@ -179,7 +177,6 @@ void psb_cc_btree::make_offset(tree_desc *desc)
 	desc->pos_end = end_pos;
 	desc->first_char = n;
 }
-
 void psb_cc_btree::make_link()
 {
 	for (uint32_t i = 0; i < values.size(); i++)
