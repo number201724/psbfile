@@ -22,11 +22,12 @@ psb_link::~psb_link()
 {
 }
 
-bool psb_link::link(psb_cc &cc, Json::Value& resource_code)
+bool psb_link::link(psb_cc &cc, Json::Value& resource_code,string res_path)
 {
 	cc_stream complete_data;
 	PSBHDR hdr;
 	_compiler = &cc;
+	_res_path = res_path;
 
 	psb_cc_base* entries = cc.get_entries();
 	
@@ -114,7 +115,7 @@ bool psb_link::link_resource_table(Json::Value& resource_code)
 {
 	_resource = new psb_link_resource();
 
-	if (!_resource->load_resource(resource_code))
+	if (!_resource->load_resource(resource_code,_res_path))
 	{
 		return false;
 	}

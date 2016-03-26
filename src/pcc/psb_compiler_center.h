@@ -9,13 +9,17 @@ public:
 	psb_compiler_center();
 	~psb_compiler_center();
 
-	bool require_compile(string src_file, string res_file, string output_file);
-
+	bool require_compile(string src_file, string output_file);
+	string get_directory(string src_file);
 	bool compile();
 	bool link();
 	bool write_file();
+	string get_res_filename(string src_file);
+
+	bool can_load_resource();
 
 protected:
+	string _src_dir;
 	string _src_file;
 	string _res_file;
 	string _output_file;

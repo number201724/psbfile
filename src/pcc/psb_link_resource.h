@@ -16,7 +16,7 @@ public:
 	~psb_link_resource();
 
 
-	bool load_resource(Json::Value& resource_code);
+	bool load_resource(Json::Value& resource_code,string _res_path);
 	bool load_file(uint32_t i,string filename);
 	virtual bool compile();
 

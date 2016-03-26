@@ -18,12 +18,12 @@ int main(int argc, char* argv[])
 	cout << "KRKR PSB Package Compiler " << endl << "Author:201724" << endl;
 	if(argc < 3)
 	{
-		cout << "usage: pcc <source_code_file> <resource_code_file> <output_psb_file>" << endl;
+		cout << "usage: pcc <source_code_file> <output_psb_file>" << endl;
 		return 0;
 	}
 
 	cout << "run interpreter...." << endl;
-	if(!pcc.require_compile(argv[1], argv[2], argv[3]))
+	if(!pcc.require_compile(argv[1], argv[2]))
 	{
 		cout << "interpreter failed" << endl;
 		return 1;

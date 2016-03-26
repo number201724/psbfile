@@ -26,11 +26,11 @@ bool psb_link_resource::compile()
 	return true;
 }
 
-bool psb_link_resource::load_resource(Json::Value& resource_code)
+bool psb_link_resource::load_resource(Json::Value& resource_code,string _res_path)
 {
 	for (uint32_t i = 0; i < resource_code.size(); i++)
 	{
-		if (!load_file(i, resource_code[i].asString()))
+		if (!load_file(i, _res_path  + resource_code[i].asString()))
 		{
 			cout << "load resource file:" << resource_code[i].asString() << " failed." << endl;
 			return false;

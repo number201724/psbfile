@@ -25,9 +25,11 @@ public:
 	bool link_string_table();
 	bool link_names_table();
 	bool link_resource_table(Json::Value& resource_code);
-	bool link(psb_cc &cc, Json::Value& resource_code);
+	bool link(psb_cc &cc, Json::Value& resource_code,string res_path);
 
 protected:
+	string _res_path;
+	
 	psb_cc_btree *names;
 
 	psb_cc* _compiler;
