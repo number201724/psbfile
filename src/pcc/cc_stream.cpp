@@ -36,18 +36,13 @@ uint8_t cc_stream::calc_integer_size(int64_t value)
 	if(value < 0){
 		value = ~value + 1;
 	}
-
-	int64_t mask = 0;
-
+	if(value ==0) return 1;
 	for(uint8_t i=0;i < sizeof(value);i++)
 	{
-		mask = 0;
-		for(uint8_t j=0;j<(i * 8);j++){
-			mask |= ((int64_t)1 << j);
-		}
+		int64_t mask = (int64_t)1 << ((i * 8) - 1);
 
 		if(value >> (i * 8) == 0){
-			if(value == mask) {
+			if(value & mask) {
 				bytes++;
 			}
 			break;
