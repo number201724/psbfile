@@ -110,8 +110,8 @@ psb_cc_base* psb_cc::pack(Json::Value& source_code)
 		}
 	}
 
-	if (source_code.type() == Json::uintValue || source_code.type() == Json::intValue) {
-		return new psb_cc_integer(source_code.asUInt64());
+	if (source_code.type() == Json::intValue) {
+		return new psb_cc_integer(source_code.asInt64());
 	}
 
 	if (source_code.type() == Json::realValue) {
@@ -119,7 +119,7 @@ psb_cc_base* psb_cc::pack(Json::Value& source_code)
 		long double s = source_code.asDouble();
 		s = fabs(s);
 		s *= 100000;
-		s -= (uint64_t)s;
+		s -= (int64_t)s;
 
 		if (s == 0.0) {
 			return new psb_cc_decimal(source_code.asFloat());

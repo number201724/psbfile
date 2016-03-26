@@ -60,7 +60,7 @@ traversal_offsets_tree(psb_t& psb,
 				value->get_type() == psb_value_t::TYPE_NUMBER_N2 || value->get_type() == psb_value_t::TYPE_NUMBER_N3 ||
 				value->get_type() == psb_value_t::TYPE_NUMBER_N4) {
 
-				Json::Value node(Json::uintValue);
+				Json::Value node(Json::intValue);
 				psb_number_t *number = (psb_number_t*)value;
 				node = number->get_integer();
 				root.append(node);
@@ -85,9 +85,9 @@ traversal_offsets_tree(psb_t& psb,
 			if (value->get_type() == psb_value_t::TYPE_NUMBER_N5 || value->get_type() == psb_value_t::TYPE_NUMBER_N6 ||
 				value->get_type() == psb_value_t::TYPE_NUMBER_N7 || value->get_type() == psb_value_t::TYPE_NUMBER_N8) {
 
-				Json::Value node(Json::uintValue);
+				Json::Value node(Json::intValue);
 				psb_number_t *number = (psb_number_t*)value;
-				node = number->get_integer64();
+				node = number->get_integer();
 				root.append(node);
 			}
 
@@ -161,7 +161,7 @@ traversal_object_tree(psb_t& psb,
 				value->get_type() == psb_value_t::TYPE_NUMBER_N2 || value->get_type() == psb_value_t::TYPE_NUMBER_N3 ||
 				value->get_type() == psb_value_t::TYPE_NUMBER_N4) {
 
-				Json::Value node(Json::uintValue);
+				Json::Value node(Json::intValue);
 				psb_number_t *number = (psb_number_t*)value;
 				node = number->get_integer();
 				root[entry_name] = node;
@@ -170,7 +170,7 @@ traversal_object_tree(psb_t& psb,
 			if (value->get_type() == psb_value_t::TYPE_FLOAT0 || value->get_type() == psb_value_t::TYPE_FLOAT || value->get_type() == psb_value_t::TYPE_DOUBLE) {
 
 				Json::Value node(Json::realValue);
-
+				
 				psb_number_t *number = (psb_number_t*)value;
 				if (value->get_type() == psb_value_t::TYPE_FLOAT || value->get_type() == psb_value_t::TYPE_FLOAT0) {
 					node = number->get_float();
@@ -178,16 +178,15 @@ traversal_object_tree(psb_t& psb,
 				if (value->get_type() == psb_value_t::TYPE_DOUBLE) {
 					node = number->get_double();
 				}
-
 				root[entry_name] = node;
 			}
 
 			if (value->get_type() == psb_value_t::TYPE_NUMBER_N5 || value->get_type() == psb_value_t::TYPE_NUMBER_N6 ||
 				value->get_type() == psb_value_t::TYPE_NUMBER_N7 || value->get_type() == psb_value_t::TYPE_NUMBER_N8) {
 
-				Json::Value node(Json::uintValue);
+				Json::Value node(Json::intValue);
 				psb_number_t *number = (psb_number_t*)value;
-				node = number->get_integer64();
+				node = number->get_integer();
 				root[entry_name] = node;
 			}
 

@@ -118,18 +118,11 @@ psb_number_t(const psb_t&    psb,
 	psb.get_number(p, value, number_type);
 }
 
-uint32_t
+int64_t
 psb_number_t::
 get_integer() const
 {
 	return value.i;
-}
-
-uint64_t
-psb_number_t::
-get_integer64() const
-{
-	return value.i64;
 }
 
 
@@ -399,7 +392,7 @@ get_number(unsigned char* p, psb_number_t::psb_number_value_t &value, psb_number
 	bool parse_ok = true;
 	unsigned char  type = *p++;
 	uint32_t  kind = TYPE_TO_KIND[type];
-	uint32_t  v = 0;
+	int64_t v = 0;
 
 	switch (kind) {
 	case 1:
@@ -409,18 +402,8 @@ get_number(unsigned char* p, psb_number_t::psb_number_value_t &value, psb_number
 	case 2:
 		v = 1;
 		break;
-
+	
 	case 3:
-	{
-		uint32_t n = type - 4;
-
-		for (uint32_t i = 0; i < n; i++) {
-			v |= *p++ << (i * 8);
-		}
-		value.i = v;
-		number_type = psb_number_t::INTEGER;
-	}
-	break;
 	case 4:
 	{
 		uint32_t n = type - 4;
@@ -428,8 +411,17 @@ get_number(unsigned char* p, psb_number_t::psb_number_value_t &value, psb_number
 		for (uint32_t i = 0; i < n; i++) {
 			v |= *p++ << (i * 8);
 		}
-		value.i64 = v;
-		number_type = psb_number_t::LONGLONG;
+		
+		int64_t mask = (int64_t)1 << ((n * 8) - 1);
+		if(v & mask) {
+			for(int i= n*8;i<sizeof(v)*8;i++){
+				v |= (int64_t)1 << i;
+			}
+		}
+
+		value.i = v;
+
+		number_type = psb_number_t::INTEGER;
 	}
 	break;
 	case 9:

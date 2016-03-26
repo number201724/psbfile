@@ -77,9 +77,6 @@ bool psb_link::link(psb_cc &cc, Json::Value& resource_code,string res_path)
 
 	_data = complete_data.copy_buffer();
 	_length = complete_data.get_length();
-	//ok
-
-	//output.write((char*)complete_data.get_data(), complete_data.get_length());
 
 	return true;
 }

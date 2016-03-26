@@ -18,7 +18,7 @@ psb_cc_array::~psb_cc_array()
 }
 
 
-void psb_cc_array::set_value(uint32_t index, uint64_t value)
+void psb_cc_array::set_value(uint32_t index, int64_t value)
 {
 	while (size() <= index) {
 		resize(index + 1);

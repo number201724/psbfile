@@ -183,15 +183,13 @@ protected:
 class psb_number_t : public psb_value_t {
 public:
 	union psb_number_value_t {
-		uint32_t i;
 		float f;
 		double d;
-		uint64_t i64;
+		int64_t i;
 	};
 
 	enum psb_number_type_t {
 		INTEGER,
-		LONGLONG,
 		FLOAT,
 		DOUBLE
 	};
@@ -199,10 +197,9 @@ public:
 	psb_number_t(const psb_t&    psb,
 		unsigned char*& p, psb_value_t::type_t type);
 
-	uint32_t get_integer() const;
 	float get_float() const;
 	double get_double() const;
-	uint64_t get_integer64() const;
+	int64_t get_integer() const;
 	psb_number_type_t get_number_type() const;
 
 	static bool is_number_type(psb_value_t *value);

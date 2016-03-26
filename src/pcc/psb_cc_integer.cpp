@@ -7,7 +7,7 @@ EMail:number201724@me.com
 */
 #include "psb_cc_integer.h"
 
-psb_cc_integer::psb_cc_integer(uint64_t number):
+psb_cc_integer::psb_cc_integer(int64_t number):
 	psb_cc_base(psb_value_t::TYPE_INTEGER),_number(number)
 {
 
@@ -24,12 +24,12 @@ psb_cc_integer::~psb_cc_integer()
 }
 
 
-uint64_t psb_cc_integer::get_number()
+int64_t psb_cc_integer::get_number()
 {
 	return _number;
 }
 
-void psb_cc_integer::set_number(uint64_t number)
+void psb_cc_integer::set_number(int64_t number)
 {
 	_number = number;
 }

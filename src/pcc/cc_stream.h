@@ -6,7 +6,7 @@ public:
 	cc_stream(unsigned char *data, uint32_t length);
 	~cc_stream();
 
-	static uint8_t calc_integer_size(uint64_t value);
+	static uint8_t calc_integer_size(int64_t value);
 
 	//get_buffer return value need delete[]
 	unsigned char *copy_buffer();
@@ -19,7 +19,7 @@ public:
 
 	void replace(uint32_t pos, const unsigned char *data, uint32_t length);
 
-	void write_integer(uint64_t value, uint8_t size = 0);
+	void write_integer(int64_t value, uint8_t size = 0);
 
 	//template struct...
 	template <class T>

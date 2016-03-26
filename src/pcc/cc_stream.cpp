@@ -29,18 +29,31 @@ cc_stream::~cc_stream()
 	}
 }
 
-uint8_t cc_stream::calc_integer_size(uint64_t value)
+uint8_t cc_stream::calc_integer_size(int64_t value)
 {
-	uint8_t bytes = 1;
+	uint8_t bytes = 0;
+	
+	if(value < 0){
+		value = ~value + 1;
+	}
 
-	if (value & 0xff) bytes = 1;
-	if (value & 0xff00) bytes = 2;
-	if (value & 0xff0000) bytes = 3;
-	if (value & 0xff000000) bytes = 4;
-	if (value & 0xff00000000) bytes = 5;
-	if (value & 0xff0000000000) bytes = 6;
-	if (value & 0xff000000000000) bytes = 7;
-	if (value & 0xff00000000000000) bytes = 8;
+	int64_t mask = 0;
+
+	for(uint8_t i=0;i < sizeof(value);i++)
+	{
+		mask = 0;
+		for(uint8_t j=0;j<(i * 8);j++){
+			mask |= ((int64_t)1 << j);
+		}
+
+		if(value >> (i * 8) == 0){
+			if(value == mask) {
+				bytes++;
+			}
+			break;
+		}
+		bytes++;
+	}
 
 	return bytes;
 }
@@ -72,7 +85,7 @@ uint32_t cc_stream::get_private_length()
 	return _length;
 }
 
-void cc_stream::write_integer(uint64_t value, uint8_t size)
+void cc_stream::write_integer(int64_t value, uint8_t size)
 {
 	if (size == 0) {
 		size = calc_integer_size(value);
