@@ -318,7 +318,7 @@ psb_t(unsigned char* buff) {
 	str1 = new psb_array_t(*this, p, (psb_value_t::type_t)p[0]);
 	str2 = new psb_array_t(*this, p, (psb_value_t::type_t)p[0]);
 	str3 = new psb_array_t(*this, p, (psb_value_t::type_t)p[0]);
-
+	
 	p = buff + hdr->offset_strings;
 	strings = new psb_array_t(*this, p, (psb_value_t::type_t)p[0]);
 

@@ -49,8 +49,9 @@ bool psb_link::link(psb_cc &cc, Json::Value& resource_code,string res_path)
 	}
 
 	memcpy(&hdr.signature, "PSB", 4);
-	hdr.type = 2;
-	hdr.unknown1 = 0;
+	hdr.encrypt = 0;
+	hdr.version = 2;
+	hdr.offset_encrypt = 0;
 	complete_data.append((unsigned char*)&hdr, sizeof(hdr));
 
 	//it's stream ,don't modify

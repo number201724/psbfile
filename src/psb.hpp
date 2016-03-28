@@ -21,15 +21,31 @@ using namespace std;
 
 struct PSBHDR {
 	unsigned char signature[4];
-	uint32_t type;
-	uint32_t unknown1;
-	uint32_t offset_names;
+	uint16_t version;		//version
+	uint16_t encrypt;
+	uint32_t offset_encrypt;	// = offset_names
+	uint32_t offset_names;//
 	uint32_t offset_strings;
 	uint32_t offset_strings_data;
 	uint32_t offset_chunk_offsets;
 	uint32_t offset_chunk_lengths;
 	uint32_t offset_chunk_data;
 	uint32_t offset_entries;
+};
+
+struct PSBHDR3 {
+	unsigned char signature[4];
+	uint16_t version;		//version
+	uint16_t encrypt;
+	uint32_t offset_encrypt;	// = offset_names
+	uint32_t offset_names;//
+	uint32_t offset_strings;
+	uint32_t offset_strings_data;
+	uint32_t offset_chunk_offsets;
+	uint32_t offset_chunk_lengths;
+	uint32_t offset_chunk_data;
+	uint32_t offset_entries;
+	uint32_t offset_emote;
 };
 
 #pragma pack()
